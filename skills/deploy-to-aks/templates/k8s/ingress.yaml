@@ -1,0 +1,42 @@
+# =============================================================================
+# Kubernetes Ingress Template — AKS Deploy Skill
+# =============================================================================
+# Use this template for AKS Standard clusters with the NGINX Ingress Controller.
+# For AKS Automatic clusters, use gateway.yaml + httproute.yaml instead.
+#
+# REPLACE: <app-name>    — your application name (e.g., order-api)
+# REPLACE: <namespace>   — target namespace (e.g., production)
+# REPLACE: <hostname>    — FQDN for the ingress rule (e.g., api.example.com)
+# REPLACE: <path>        — URL path (e.g., /)
+# REPLACE: <service-port> — port on the backend Service (e.g., 80)
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: <app-name>
+  namespace: <namespace>
+  labels:
+    app: <app-name>
+  annotations:
+    # NGINX-specific annotations — adjust for your ingress controller
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "false"
+spec:
+  ingressClassName: nginx
+  # Uncomment for TLS — requires a Secret with the certificate
+  # tls:
+  #   - hosts:
+  #       - <hostname>
+  #     secretName: <tls-secret-name>
+  rules:
+    - host: "<hostname>"
+      http:
+        paths:
+          - path: "<path>"
+            pathType: Prefix
+            backend:
+              service:
+                name: <app-name>
+                port:
+                  number: <service-port>
