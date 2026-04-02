@@ -1,0 +1,229 @@
+<style>
+  .decision-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+    background: #f8f9fa;
+    padding: 32px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .decision-prompt {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 4px 0;
+  }
+
+  .decision-hint {
+    font-size: 0.8rem;
+    color: #888;
+    margin: 0 0 24px 0;
+  }
+
+  .decision-cards {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .decision-card {
+    flex: 1;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .decision-card:hover {
+    box-shadow: 0 4px 16px rgba(0,120,212,0.12);
+    border-color: #90caf9;
+    transform: translateY(-1px);
+  }
+
+  .decision-card.selected {
+    border-color: #0078D4;
+    box-shadow: 0 0 0 3px rgba(0,120,212,0.15), 0 4px 16px rgba(0,120,212,0.12);
+  }
+
+  .decision-card.selected .card-select-indicator {
+    background: #0078D4;
+    border-color: #0078D4;
+  }
+
+  .decision-card.selected .card-select-indicator::after {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+    margin: 1px 0 0 2px;
+  }
+
+  .card-top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .recommended-badge {
+    background: #107C10;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 10px;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.55;
+    margin: 0 0 16px 0;
+  }
+
+  .card-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    flex: 1;
+  }
+
+  .card-features li {
+    font-size: 0.82rem;
+    color: #333;
+    padding: 5px 0 5px 24px;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .card-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    color: #107C10;
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+
+  .card-select-indicator {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    margin: 4px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .decision-cards {
+      flex-direction: column;
+    }
+  }
+</style>
+
+<div class="decision-container">
+  <p class="decision-prompt">Choose your deployment configuration</p>
+  <p class="decision-hint">Click a card to select — this informs how your infrastructure will be provisioned.</p>
+
+  <div class="decision-cards">
+
+    <!-- ── Option A ── -->
+    <!-- {{OPTION_A_TITLE}} — Title for option A, e.g. "AKS Automatic" -->
+    <!-- {{OPTION_A_DESC}} — Description paragraph for option A -->
+    <!-- {{OPTION_A_FEATURES}} — Comma-separated feature strings for option A.
+         The skill engine splits on commas and generates one <li> per feature.
+         Example: "Managed node pools,Automatic scaling,Built-in monitoring"
+         becomes three list items. -->
+    <!-- {{RECOMMENDED}} — "A" or "B": determines which card gets the RECOMMENDED badge.
+         If "A", the badge appears on Option A's card; if "B", on Option B's card. -->
+    <div class="decision-card" data-choice="A" onclick="toggleSelect(this)">
+      <div class="card-top-row">
+        <h3 class="card-title">{{OPTION_A_TITLE}}</h3>
+        <!-- Render this badge only when {{RECOMMENDED}} === "A" -->
+        <span class="recommended-badge">Recommended</span>
+      </div>
+      <p class="card-desc">{{OPTION_A_DESC}}</p>
+      <ul class="card-features">
+        <!-- {{OPTION_A_FEATURES}} — Replace with <li> elements, one per feature.
+             Example output:
+             <li>Managed node pools</li>
+             <li>Automatic scaling</li>
+             <li>Built-in monitoring</li>
+        -->
+        {{OPTION_A_FEATURES}}
+      </ul>
+      <div class="card-select-indicator"></div>
+    </div>
+
+    <!-- ── Option B ── -->
+    <!-- {{OPTION_B_TITLE}} — Title for option B, e.g. "AKS Standard" -->
+    <!-- {{OPTION_B_DESC}} — Description paragraph for option B -->
+    <!-- {{OPTION_B_FEATURES}} — Comma-separated feature strings for option B.
+         Same format as OPTION_A_FEATURES. -->
+    <div class="decision-card" data-choice="B" onclick="toggleSelect(this)">
+      <div class="card-top-row">
+        <h3 class="card-title">{{OPTION_B_TITLE}}</h3>
+        <!-- Render this badge only when {{RECOMMENDED}} === "B" -->
+        <span class="recommended-badge">Recommended</span>
+      </div>
+      <p class="card-desc">{{OPTION_B_DESC}}</p>
+      <ul class="card-features">
+        <!-- {{OPTION_B_FEATURES}} — Replace with <li> elements, one per feature.
+             Example output:
+             <li>Full control over node configuration</li>
+             <li>Custom networking policies</li>
+             <li>Advanced RBAC setup</li>
+        -->
+        {{OPTION_B_FEATURES}}
+      </ul>
+      <div class="card-select-indicator"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function toggleSelect(el) {
+    // Deselect all sibling cards
+    var cards = el.parentElement.querySelectorAll('.decision-card');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].classList.remove('selected');
+    }
+    // Select the clicked card
+    el.classList.add('selected');
+
+    // Expose the selected choice as a data attribute on the container
+    var container = el.closest('.decision-container');
+    if (container) {
+      container.setAttribute('data-selected-choice', el.getAttribute('data-choice'));
+    }
+  }
+</script>
