@@ -1,48 +1,91 @@
-# Deploy to AKS — OpenCode Skill
+---
+name: deploy-to-aks
+description: Use when deploying a web application or API to Azure Kubernetes Service, containerizing an app for AKS, or generating Kubernetes manifests and Bicep infrastructure for Azure
+---
 
-> **Status:** Skeleton — implementation pending. See the [design spec](../docs/specs/2026-04-02-deploy-to-aks-skill-design.md) for the full plan.
+# Deploy to AKS
 
-An OpenCode skill that guides developers through deploying applications to Azure Kubernetes Service (AKS) without requiring Kubernetes expertise.
+Guide developers through deploying applications to Azure Kubernetes Service (AKS) without requiring Kubernetes expertise. Reads the actual project, detects the framework, generates production-ready artifacts, and optionally executes the deployment.
 
 ## Checklist
 
-The skill follows a 6-phase deployment journey. Each phase loads its own instruction file from `phases/`.
+You MUST create a todo for each of these items and complete them in order:
 
-1. **Read phase file** for the current phase
-2. **Execute phase** following the instructions
-3. **Use visual companion** at Phases 2, 4, and 6
-4. **Confirm with developer** before advancing to the next phase
-5. **Track progress** via todo items
+1. **Discover** -- scan the project, detect framework/language/dependencies, ask clarifying questions
+2. **Architect** -- plan infrastructure, show architecture diagram + cost in visual companion, get approval
+3. **Containerize** -- generate or validate Dockerfile + .dockerignore
+4. **Scaffold** -- generate K8s manifests + Bicep IaC, validate against Deployment Safeguards
+5. **Pipeline** -- generate GitHub Actions CI/CD workflow, optionally configure OIDC
+6. **Deploy** -- execute deployment with confirmation gates, show summary dashboard
 
-## Phases
+## Process Flow
 
-| Phase | File | Visual? | Description |
-|-------|------|---------|-------------|
-| 1 | `phases/01-discover.md` | No | Scan project, detect stack, ask questions |
-| 2 | `phases/02-architect.md` | Yes | Plan infrastructure, show diagram + cost |
-| 3 | `phases/03-containerize.md` | No | Generate/validate Dockerfile |
-| 4 | `phases/04-scaffold.md` | Yes | Generate K8s manifests + Bicep, validate safeguards |
-| 5 | `phases/05-pipeline.md` | No | Generate GitHub Actions workflow |
-| 6 | `phases/06-deploy.md` | Yes | Execute deployment, show summary dashboard |
+```dot
+digraph deploy_flow {
+    rankdir=LR;
+    node [shape=box, style=rounded];
 
-## Reference Documents
+    discover [label="1. Discover\n(terminal)"];
+    architect [label="2. Architect\n(visual)"];
+    containerize [label="3. Containerize\n(terminal)"];
+    scaffold [label="4. Scaffold\n(visual)"];
+    pipeline [label="5. Pipeline\n(terminal)"];
+    deploy [label="6. Deploy\n(visual)"];
 
-Load these as needed during the relevant phases:
+    discover -> architect;
+    architect -> containerize [label="approved"];
+    architect -> architect [label="iterate"];
+    containerize -> scaffold;
+    scaffold -> pipeline;
+    pipeline -> deploy;
+}
+```
 
-- `reference/aks-automatic.md` — AKS Automatic specifics
-- `reference/aks-standard.md` — AKS Standard differences
-- `reference/safeguards.md` — 13 Deployment Safeguard rules
-- `reference/workload-identity.md` — Workload Identity patterns
-- `reference/cost-reference.md` — Azure pricing data
+## Phase Instructions
+
+At each phase, read the corresponding instruction file for detailed guidance:
+
+| Phase | Read | Also load |
+|-------|------|-----------|
+| 1. Discover | `phases/01-discover.md` | -- |
+| 2. Architect | `phases/02-architect.md` | `reference/cost-reference.md` |
+| 3. Containerize | `phases/03-containerize.md` | -- |
+| 4. Scaffold | `phases/04-scaffold.md` | `reference/safeguards.md`, `reference/workload-identity.md` |
+| 5. Pipeline | `phases/05-pipeline.md` | -- |
+| 6. Deploy | `phases/06-deploy.md` | -- |
+
+Load `reference/aks-automatic.md` or `reference/aks-standard.md` based on the developer's AKS flavor choice (detected in Phase 1).
+
+## Visual Companion
+
+This skill uses the visual companion at three touchpoints:
+- **Phase 2:** Architecture diagram + cost estimate (use `visuals/architecture-diagram.html` as template)
+- **Phase 4:** Updated architecture diagram with actual resource names
+- **Phase 6:** Deployment summary dashboard (use `visuals/summary-dashboard.html` as template)
+
+Start the visual companion server at Phase 2 using the brainstorming skill's server:
+```bash
+scripts/start-server.sh --project-dir <developer-project-root>
+```
+
+Decision comparison cards (`visuals/decision-card.html`) can be used at any phase when the developer faces a visual choice.
 
 ## Execution Model
 
-- **Generate artifacts automatically** — Dockerfiles, manifests, Bicep, workflows
-- **Execute CLI commands only with confirmation** — `az`, `docker`, `kubectl`, `gh`
-- Each destructive command requires explicit developer opt-in
+- **Generate artifacts automatically** -- Dockerfiles, manifests, Bicep, workflows
+- **Execute CLI commands only with confirmation** -- `az`, `docker`, `kubectl`, `gh`
+- Show the exact command that will run and ask for explicit opt-in
 
 ## Adaptive Behavior
 
-- **Detect before create** — check for existing Dockerfiles, manifests, Bicep, CI/CD
-- **Validate before replace** — improve what exists rather than overwriting
-- **Ask only what can't be auto-detected** — minimize questions, maximize intelligence
+- **Detect before create** -- check for existing Dockerfiles, manifests, Bicep, CI/CD
+- **Validate before replace** -- improve what exists rather than overwriting
+- **Ask only what can't be auto-detected** -- minimize questions, maximize intelligence
+- **Teach while fixing** -- when auto-fixing Safeguard violations, explain why
+
+## Key Principles
+
+- ONE concept per turn -- never overload the developer
+- Progressive discovery -- ask incrementally, confirm as you go
+- Sensible defaults -- AKS Automatic, Gateway API, Workload Identity, 2 replicas
+- No Kubernetes jargon until Phase 4 -- frame AKS as a "scalable app platform"
