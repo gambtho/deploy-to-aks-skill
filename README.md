@@ -1,4 +1,4 @@
-![deploy-to-aks](docs/images/banner.svg)
+![deploy-to-aks banner](docs/images/banner.svg)
 
 [![Claude Code](https://img.shields.io/badge/Claude_Code-supported-22c55e?logo=anthropic&logoColor=white)](https://docs.anthropic.com/en/docs/claude-code/overview)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub_Copilot-supported-22c55e?logo=github&logoColor=white)](https://docs.github.com/en/copilot)
@@ -102,10 +102,19 @@ Then create or append to `.github/copilot-instructions.md`:
 ## AKS Deployment Skill
 
 When the developer asks for help deploying to Azure Kubernetes Service (AKS),
-follow the phased deployment guide in `.github/skills/deploy-to-aks/SKILL.md`.
+containerizing their application for AKS, generating Kubernetes manifests, or
+creating Bicep infrastructure for Azure, follow the phased deployment guide
+in `.github/skills/deploy-to-aks/SKILL.md`.
 
-Start by reading that file, then follow its instructions phase by phase.
-Do not skip phases or reorder them.
+Trigger phrases include:
+- "deploy to AKS" / "deploy to Azure Kubernetes Service"
+- "containerize this for AKS" / "create a Dockerfile for AKS"
+- "generate Kubernetes manifests" / "scaffold K8s for Azure"
+- "create Bicep infrastructure" / "set up AKS infrastructure"
+- "help me deploy to Azure"
+
+Start by reading `.github/skills/deploy-to-aks/SKILL.md`, then follow its
+instructions phase by phase. Do not skip phases or reorder them.
 ```
 
 </details>
