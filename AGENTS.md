@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This repository contains the **deploy-to-aks** OpenCode skill — a phased, conversational guide that deploys web applications to Azure Kubernetes Service (AKS) without requiring Kubernetes expertise. It is not a runnable application; it is a collection of markdown instruction files, reference documents, and templates consumed by an AI coding agent at runtime.
+This repository contains the **deploy-to-aks** AI coding agent skill — a phased, conversational guide that deploys web applications to Azure Kubernetes Service (AKS) without requiring Kubernetes expertise. It supports Claude Code, GitHub Copilot, and OpenCode. It is not a runnable application; it is a collection of markdown instruction files, reference documents, and templates consumed by an AI coding agent at runtime.
 
 ## Repository structure
 
@@ -43,7 +43,7 @@ docs/specs/                         # Design spec and implementation plan
 
 ## Testing
 
-There are no automated tests. The skill is validated by running it against real projects (e.g., `spring-petclinic`) inside OpenCode and verifying the generated artifacts are correct and the phases flow properly. When making changes, mentally trace through the 6-phase flow to ensure consistency.
+There are no automated tests. The skill is validated by running it against real projects (e.g., `spring-petclinic`) inside any supported agent (Claude Code, GitHub Copilot, or OpenCode) and verifying the generated artifacts are correct and the phases flow properly. When making changes, mentally trace through the 6-phase flow to ensure consistency.
 
 ## Commit style
 
