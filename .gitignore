@@ -4,8 +4,10 @@ node_modules/
 # Build output
 dist/
 
-# Superpowers brainstorming sessions
+# Agent working directories
 .superpowers/
+.claude/
+.opencode/
 
 # OS files
 .DS_Store
