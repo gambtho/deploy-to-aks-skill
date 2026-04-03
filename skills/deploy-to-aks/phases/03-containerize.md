@@ -32,7 +32,7 @@ Every production Dockerfile MUST satisfy these requirements. Each item explains 
 | 2 | **Non-root `USER`** | AKS Deployment Safeguards policy **DS004** blocks containers that run as root. Running as a non-root user limits the blast radius of a container escape. |
 | 3 | **Pinned base-image tags** (no `:latest`) | AKS Deployment Safeguards policy **DS009** warns on `:latest` tags because they are mutable — a rebuild can silently pull a breaking change. Pin to a specific version (e.g. `node:22-alpine`, `python:3.12-slim`). |
 | 4 | **Layer caching — lockfile before source** | Copy the dependency lockfile (`package-lock.json`, `requirements.txt`, `go.sum`, etc.) and install dependencies *before* copying the rest of the source. This lets Docker cache the expensive install layer and only re-run it when dependencies actually change, cutting CI/CD build times significantly. |
-| 5 | **`HEALTHCHECK` instruction** | Kubernetes liveness and readiness probes need an endpoint or command to check. A Dockerfile `HEALTHCHECK` provides a sensible default and documents the contract for operators. |
+| 5 | **`HEALTHCHECK` instruction** (or documented omission) | Kubernetes liveness and readiness probes need an endpoint or command to check. A Dockerfile `HEALTHCHECK` provides a sensible default and documents the contract for operators. If the base image lacks curl/wget (e.g., distroless, JRE Alpine, ASP.NET runtime), omit the `HEALTHCHECK` and add a comment explaining that Kubernetes probes handle health checking in AKS. |
 | 6 | **`.dockerignore`** | Prevents `node_modules/`, `venv/`, `.git/`, build artifacts, and secrets from being sent to the build context. This speeds up builds and avoids accidentally baking credentials or bloat into the image. |
 
 ---

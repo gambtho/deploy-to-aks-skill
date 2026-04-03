@@ -1,5 +1,7 @@
 # AKS Automatic Reference
 
+> **Last updated:** 2026-04-02
+
 ## What is AKS Automatic
 
 AKS Automatic is a fully managed Kubernetes experience where Azure handles node provisioning, scaling, OS patching, and Kubernetes upgrades for you. You deploy workloads and Azure figures out the right VM sizes, node counts, and infrastructure configuration. Think of it as "serverless-ish Kubernetes" — you still write K8s manifests, but you skip all the infrastructure knobs.

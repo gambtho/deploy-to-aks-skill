@@ -26,9 +26,9 @@ Customize all placeholders with real values discovered in Phase 1 and scaffolded
 
 | Placeholder       | Source                                      |
 | ----------------- | ------------------------------------------- |
-| `__ACR_NAME__`    | ACR name from Phase 1 discovery or Phase 4  |
-| `__AKS_CLUSTER__` | AKS cluster name from Phase 1               |
-| `__RG_NAME__`     | Resource group from Phase 1                 |
+| `__ACR_NAME__`    | ACR name from Phase 2 architecture contract |
+| `__AKS_CLUSTER__` | AKS cluster name from Phase 2 architecture contract |
+| `__RG_NAME__`     | Resource group from Phase 2 architecture contract |
 | `__NAMESPACE__`   | Kubernetes namespace from Phase 4 scaffold  |
 | `__APP_NAME__`    | Application name from Phase 1               |
 

@@ -1,5 +1,7 @@
 # Azure Workload Identity for AKS
 
+> **Last updated:** 2026-04-02
+
 ## What Is Workload Identity?
 
 Workload Identity lets pods in AKS authenticate to Azure services (Key Vault, Storage,

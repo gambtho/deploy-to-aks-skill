@@ -3,7 +3,7 @@
 # =============================================================================
 # Customize the following before use:
 #   - APP_NAME:    Replace "app" in the binary name and CMD
-#   - PORT:        Change EXPOSE and HEALTHCHECK port if not 8080
+#   - PORT:        Change EXPOSE port if not 8080
 #   - MODULE_PATH: Ensure go.mod module path matches your project
 #
 # Notes:
@@ -46,11 +46,9 @@ USER 65534
 
 EXPOSE 8080
 
-# Distroless has no shell and no curl/wget.  Use the binary itself as the
-# health probe — the app should exit 0 on GET /healthz.
-# In practice Kubernetes probes (httpGet, exec) handle this; the Dockerfile
-# HEALTHCHECK is a fallback for local Docker usage.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD ["/app", "healthcheck"]
+# Distroless has no shell, curl, or wget. Kubernetes liveness/readiness probes
+# (configured in deployment.yaml) handle health checking in AKS.
+# For local Docker usage, consider adding a /healthz handler and using a
+# statically-compiled health check binary, or swap to the :debug variant.
 
 ENTRYPOINT ["/app"]

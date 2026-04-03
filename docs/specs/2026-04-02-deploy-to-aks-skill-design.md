@@ -295,7 +295,7 @@ Encoded in focused reference documents, loaded only when relevant.
 | DS006 | No hostPID | Error | Yes |
 | DS007 | No hostIPC | Error | Yes |
 | DS008 | No privileged | Error | Yes |
-| DS009 | No :latest tags | Warning | No (needs developer input) |
+| DS009 | No :latest tags | Error | No (needs developer input) |
 | DS010 | replicas >= 2 | Warning | Yes |
 | DS011 | allowPrivilegeEscalation: false | Error | Yes |
 | DS012 | readOnlyRootFilesystem | Warning | Yes |

@@ -47,14 +47,12 @@ At each phase, read the corresponding instruction file for detailed guidance:
 
 | Phase | Read | Also load |
 |-------|------|-----------|
-| 1. Discover | `phases/01-discover.md` | `knowledge-packs/frameworks/<detected>.md` (if exists) |
-| 2. Architect | `phases/02-architect.md` | `reference/cost-reference.md` |
+| 1. Discover | `phases/01-discover.md` | `knowledge-packs/frameworks/<detected>.md` (if exists); `reference/aks-automatic.md` or `reference/aks-standard.md` based on AKS flavor choice |
+| 2. Architect | `phases/02-architect.md` | `reference/cost-reference.md`, `templates/mermaid/architecture-diagram.md` |
 | 3. Containerize | `phases/03-containerize.md` | -- |
-| 4. Scaffold | `phases/04-scaffold.md` | `reference/safeguards.md`, `reference/workload-identity.md` |
+| 4. Scaffold | `phases/04-scaffold.md` | `reference/safeguards.md`, `reference/workload-identity.md`, `templates/mermaid/architecture-diagram.md` |
 | 5. Pipeline | `phases/05-pipeline.md` | -- |
-| 6. Deploy | `phases/06-deploy.md` | -- |
-
-Load `reference/aks-automatic.md` or `reference/aks-standard.md` based on the developer's AKS flavor choice (detected in Phase 1).
+| 6. Deploy | `phases/06-deploy.md` | `templates/mermaid/summary-dashboard.md` |
 
 ### Knowledge Packs
 

@@ -49,7 +49,7 @@ param postgresAdminLogin string = '${appName}admin'
 // Modules – always deployed
 // ---------------------------------------------------------------------------
 
-module aks 'aks.bicep' = {
+module aks 'modules/aks.bicep' = {
   name: '${appName}-aks'
   params: {
     appName: appName
@@ -58,7 +58,7 @@ module aks 'aks.bicep' = {
   }
 }
 
-module acr 'acr.bicep' = {
+module acr 'modules/acr.bicep' = {
   name: '${appName}-acr'
   params: {
     appName: appName
@@ -67,7 +67,7 @@ module acr 'acr.bicep' = {
   }
 }
 
-module identity 'identity.bicep' = {
+module identity 'modules/identity.bicep' = {
   name: '${appName}-identity'
   params: {
     appName: appName
@@ -82,7 +82,7 @@ module identity 'identity.bicep' = {
 // Modules – conditionally deployed
 // ---------------------------------------------------------------------------
 
-module postgresql 'postgresql.bicep' = if (enablePostgresql) {
+module postgresql 'modules/postgresql.bicep' = if (enablePostgresql) {
   name: '${appName}-postgresql'
   params: {
     appName: appName
@@ -93,15 +93,16 @@ module postgresql 'postgresql.bicep' = if (enablePostgresql) {
   }
 }
 
-module redis 'redis.bicep' = if (enableRedis) {
+module redis 'modules/redis.bicep' = if (enableRedis) {
   name: '${appName}-redis'
   params: {
     appName: appName
     location: location
+    identityPrincipalId: identity.outputs.identityPrincipalId
   }
 }
 
-module keyvault 'keyvault.bicep' = if (enableKeyvault) {
+module keyvault 'modules/keyvault.bicep' = if (enableKeyvault) {
   name: '${appName}-keyvault'
   params: {
     appName: appName

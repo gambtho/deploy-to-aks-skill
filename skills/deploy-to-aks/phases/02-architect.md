@@ -2,7 +2,7 @@
 
 ## Goal
 
-Present the full infrastructure plan **visually** before generating any Bicep, Helm, or workflow files. The developer must see exactly what will be provisioned, how services connect, and what it will cost — then explicitly approve before proceeding.
+Present the full infrastructure plan **visually** before generating any Bicep or workflow files. The developer must see exactly what will be provisioned, how services connect, and what it will cost — then explicitly approve before proceeding.
 
 **No files are generated in this phase.** This phase produces only a visual diagram, a cost estimate, and developer approval.
 
@@ -161,7 +161,7 @@ Print a concise summary in the terminal covering:
 1. **Selected services** — bulleted list with tier and purpose.
 2. **Architecture highlights** — e.g., "Traffic enters via Gateway API, routed to 1 deployment in namespace `contoso-api`. PostgreSQL and Redis accessed via Workload Identity. Images pulled from ACR `contosoapiacr`."
 3. **Cost estimate table** — the table from Step 3.
-4. **Explicit prompt:** "Review the architecture diagram in your browser and the cost estimate above. Do you want to make any changes, or shall I proceed to Phase 3 (Generate)?"
+4. **Explicit prompt:** "Review the architecture diagram and cost estimate above. Do you want to make any changes, or shall I proceed to Phase 3 (Containerize)?"
 
 ---
 
@@ -210,7 +210,7 @@ Acceptable approval signals:
 When the developer approves:
 
 1. Record the final selected services list, tiers, AKS type, and all derived names as the **Architecture Contract**. This contract is the single source of truth for Phase 3.
-2. Confirm: "Architecture approved. Moving to Phase 3: Generate."
+2. Confirm: "Architecture approved. Moving to Phase 3: Containerize."
 3. Transition to Phase 3.
 
 ### On Rejection

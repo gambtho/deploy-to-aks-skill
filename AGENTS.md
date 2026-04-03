@@ -31,19 +31,31 @@ docs/specs/                         # Design spec and implementation plan
   - Kubernetes manifests use `<angle-bracket>` placeholders (e.g., `<app-name>`, `<port>`)
   - Bicep templates use standard Bicep `param` declarations
   - GitHub Actions workflow uses `__DOUBLE_UNDERSCORE__` placeholders (e.g., `__ACR_NAME__`)
+  - Mermaid diagram templates use `{{DOUBLE_CURLY}}` placeholders (e.g., `{{APP_NAME}}`)
 - **Knowledge packs** are optional, framework-specific markdown files in `knowledge-packs/frameworks/`. They augment but never replace the core phase instructions.
 
 ## Editing guidelines
 
 - **Phase files (`phases/*.md`)** are the core logic. Each phase is self-contained and references templates/references it needs. When editing a phase, also check `SKILL.md`'s phase table to ensure the "Also load" column stays accurate.
 - **Templates** are meant to be copied and adapted per-project by the agent at runtime. They should remain generic with clear placeholders — never hardcode project-specific values.
-- **Reference files** are factual documentation. Keep them current with Azure/AKS upstream changes. The safeguards reference (`reference/safeguards.md`) maps directly to AKS Deployment Safeguard policy IDs (DS001-DS013).
+- **Reference files** are factual documentation. Keep them current with Azure/AKS upstream changes. The safeguards reference (`reference/safeguards.md`) maps directly to AKS Deployment Safeguard policy IDs (DS001-DS013). Each reference file has a "Last updated" date at the top — update it when making changes.
+- **Design specs** (`docs/specs/`) are historical design records. They may be stale relative to the current implementation (e.g., the spec references an HTML visual companion that was replaced by mermaid diagrams). Treat them as context, not as source of truth.
 - **SKILL.md** is the coordinator file read by the agent first. Its checklist, phase table, and key principles section must stay in sync with the phase files.
 - Do not add Terraform, Helm charts, or alternative CI/CD providers. Those are explicitly out of scope for v1.
 
 ## Testing
 
 There are no automated tests. The skill is validated by running it against real projects (e.g., `spring-petclinic`) inside any supported agent (Claude Code, GitHub Copilot, or OpenCode) and verifying the generated artifacts are correct and the phases flow properly. When making changes, mentally trace through the 6-phase flow to ensure consistency.
+
+### Suggested test scenarios
+
+| Scenario | Exercises |
+|----------|-----------|
+| Spring Boot + PostgreSQL on AKS Automatic | Java Dockerfile, PostgreSQL Bicep, Gateway API, knowledge pack |
+| Node.js Express + Redis on AKS Standard | Node Dockerfile, Redis Bicep, Ingress, no knowledge pack |
+| Python FastAPI (no backing services) on AKS Automatic | Python Dockerfile, minimal Bicep, Gateway API |
+| .NET ASP.NET Core + Key Vault on AKS Standard | .NET Dockerfile, Key Vault Bicep, Ingress, Workload Identity |
+| Go Gin (self-contained) on AKS Automatic | Go Dockerfile (distroless), minimal Bicep, Gateway API |
 
 ## Commit style
 

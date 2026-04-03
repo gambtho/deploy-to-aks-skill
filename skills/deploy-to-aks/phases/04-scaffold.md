@@ -135,8 +135,8 @@ infra/
    (reference: `templates/bicep/acr.bicep`)
 5. `infra/modules/keyvault.bicep` — Key Vault (if architecture includes secrets)
    (reference: `templates/bicep/keyvault.bicep`)
-6. `infra/modules/postgres.bicep` — PostgreSQL Flexible Server (if architecture
-   includes a database) (reference: `templates/bicep/postgres.bicep`)
+6. `infra/modules/postgresql.bicep` — PostgreSQL Flexible Server (if architecture
+   includes a database) (reference: `templates/bicep/postgresql.bicep`)
 7. `infra/modules/identity.bicep` — Managed Identity + Federated Credential
    (reference: `templates/bicep/identity.bicep`)
 8. Additional modules as required by the approved architecture.
@@ -208,7 +208,7 @@ infra/
     ├── acr.bicep
     ├── identity.bicep
     ├── keyvault.bicep       (if needed)
-    └── postgres.bicep       (if needed)
+    └── postgresql.bicep     (if needed)
 ```
 
 ---

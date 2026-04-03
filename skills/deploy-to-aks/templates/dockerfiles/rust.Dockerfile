@@ -3,7 +3,7 @@
 # =============================================================================
 # Customize the following before use:
 #   - APP_NAME:    Replace "app" with your binary name from Cargo.toml
-#   - PORT:        Change EXPOSE and HEALTHCHECK port if not 8080
+#   - PORT:        Change EXPOSE port if not 8080
 #
 # Notes:
 #   - The dependency-caching trick creates a dummy main.rs, builds
@@ -59,9 +59,9 @@ USER 65534
 
 EXPOSE 8080
 
-# Distroless has no shell — HEALTHCHECK uses the binary's built-in
-# healthcheck subcommand. In production, rely on Kubernetes httpGet probes.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD ["/app/app", "healthcheck"]
+# Distroless has no shell, curl, or wget. Kubernetes liveness/readiness probes
+# (configured in deployment.yaml) handle health checking in AKS.
+# For local Docker usage, consider adding a /healthz handler and using a
+# statically-compiled health check binary.
 
 ENTRYPOINT ["/app/app"]

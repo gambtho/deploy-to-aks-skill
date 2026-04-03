@@ -35,7 +35,7 @@ File generation is automatic. Any CLI commands (`az`, `docker`, `kubectl`, `gh`)
 ### Quick install (all platforms)
 
 ```bash
-git clone https://github.com/<owner>/deploy-to-aks-skill.git
+git clone https://github.com/<your-org>/deploy-to-aks-skill.git
 cd deploy-to-aks-skill
 ./install.sh
 ```
@@ -49,7 +49,7 @@ The script prompts for your platform and whether to install globally or into a s
 **Global install** (available in all your projects):
 
 ```bash
-git clone https://github.com/<owner>/deploy-to-aks-skill.git
+git clone https://github.com/<your-org>/deploy-to-aks-skill.git
 ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.claude/skills/deploy-to-aks
 ```
 
@@ -79,10 +79,19 @@ Then create or append to `.github/copilot-instructions.md`:
 ## AKS Deployment Skill
 
 When the developer asks for help deploying to Azure Kubernetes Service (AKS),
-follow the phased deployment guide in `.github/skills/deploy-to-aks/SKILL.md`.
+containerizing their application for AKS, generating Kubernetes manifests, or
+creating Bicep infrastructure for Azure, follow the phased deployment guide
+in `.github/skills/deploy-to-aks/SKILL.md`.
 
-Start by reading that file, then follow its instructions phase by phase.
-Do not skip phases or reorder them.
+Trigger phrases include:
+- "deploy to AKS" / "deploy to Azure Kubernetes Service"
+- "containerize this for AKS" / "create a Dockerfile for AKS"
+- "generate Kubernetes manifests" / "scaffold K8s for Azure"
+- "create Bicep infrastructure" / "set up AKS infrastructure"
+- "help me deploy to Azure"
+
+Start by reading `.github/skills/deploy-to-aks/SKILL.md`, then follow its
+instructions phase by phase. Do not skip phases or reorder them.
 ```
 
 ---
@@ -92,9 +101,9 @@ Do not skip phases or reorder them.
 **Global install** (available in all your projects):
 
 ```bash
-git clone https://github.com/<owner>/deploy-to-aks-skill.git
+git clone https://github.com/<your-org>/deploy-to-aks-skill.git
 mkdir -p ~/.config/opencode/skills
-ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.config/opencode/skills/deploy-to-aks
+cp -r deploy-to-aks-skill/skills/deploy-to-aks ~/.config/opencode/skills/deploy-to-aks
 ```
 
 **Project install** (available only in one project):
@@ -102,7 +111,7 @@ ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.config/opencode/skill
 ```bash
 # From your project root:
 mkdir -p .opencode/skills
-ln -s /path/to/deploy-to-aks-skill/skills/deploy-to-aks .opencode/skills/deploy-to-aks
+cp -r /path/to/deploy-to-aks-skill/skills/deploy-to-aks .opencode/skills/deploy-to-aks
 ```
 
 ---

@@ -1,5 +1,7 @@
 # AKS Deployment Safeguards Reference
 
+> **Last updated:** 2026-04-02
+
 AKS Deployment Safeguards enforce best practices on Kubernetes manifests at admission time.
 When the cluster has safeguards enabled (Enforcement level: `Warning` or `Enforcement`),
 non-compliant resources are either flagged or rejected.

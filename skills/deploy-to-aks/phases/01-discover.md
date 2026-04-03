@@ -272,4 +272,4 @@ By the end of Phase 1, the following data points **must** be known (either auto-
 
 Once all required data points are collected, write them to the project profile and announce:
 
-> **Phase 1 complete.** Proceeding to Phase 2: Plan.
+> **Phase 1 complete.** Proceeding to Phase 2: Architect.

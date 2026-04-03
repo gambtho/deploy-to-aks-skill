@@ -44,11 +44,20 @@ param skuCapacity int = 0
 ])
 param minTlsVersion string = '1.2'
 
+@description('Principal ID of the workload managed identity to grant Redis Cache Contributor role.')
+param identityPrincipalId string
+
 // ---------------------------------------------------------------------------
 // Variables
 // ---------------------------------------------------------------------------
 
 var redisName = '${appName}-redis'
+
+// Redis Cache Contributor role definition ID
+var redisCacheContributorRoleDefinitionId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  'e0f68234-74aa-48ed-b826-c38b57376e17'
+)
 
 // ---------------------------------------------------------------------------
 // Redis Cache
@@ -69,6 +78,20 @@ resource redis 'Microsoft.Cache/redis@2024-11-01' = {
       'maxmemory-policy': 'allkeys-lru'
     }
     publicNetworkAccess: 'Enabled'
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Role Assignment – Redis Cache Contributor for Workload Identity
+// ---------------------------------------------------------------------------
+
+resource redisCacheContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(redis.id, identityPrincipalId, redisCacheContributorRoleDefinitionId)
+  scope: redis
+  properties: {
+    principalId: identityPrincipalId
+    roleDefinitionId: redisCacheContributorRoleDefinitionId
+    principalType: 'ServicePrincipal'
   }
 }
 

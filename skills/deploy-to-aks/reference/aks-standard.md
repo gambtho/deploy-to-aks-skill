@@ -1,5 +1,7 @@
 # AKS Standard Reference
 
+> **Last updated:** 2026-04-02
+
 ## What is AKS Standard
 
 AKS Standard is the traditional managed Kubernetes offering on Azure where you retain full control over node pools, VM sizes, networking, ingress, and upgrade scheduling. Compared to AKS Automatic, you get more flexibility and configuration options, but you also take on more responsibility — you choose the VM SKUs, configure autoscaling, pick your ingress controller, schedule maintenance windows, and manage OS patch cadence. If Automatic is "Azure decides," Standard is "you decide, Azure runs it."
