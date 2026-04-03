@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)" rx="12"/>
+
+  <!-- Cloud + Gear icon mark (centered) -->
+  <g transform="translate(600, 52)" fill="white">
+    <!-- Cloud body: smooth cloud shape centered at 0,0 -->
+    <path d="M-32 8 C-32-8-20-20-4-18 C0-28 12-36 26-34 C40-32 50-22 50-10 C56-8 62 0 60 10 C58 18 50 24 42 24 L-20 24 C-28 24-34 18-32 8 Z" opacity="0.95"/>
+    <!-- Gear: centered at (34, 10) relative to cloud group, overlapping bottom-right -->
+    <g transform="translate(26, 4)">
+      <!-- Gear body ring -->
+      <circle cx="10" cy="10" r="6.5" fill="none" stroke="#1e40af" stroke-width="3.5"/>
+      <!-- Center hub -->
+      <circle cx="10" cy="10" r="2.8" fill="#1e40af"/>
+      <!-- Gear teeth (8 teeth using rotated rects) -->
+      <rect x="8.2" y="-1" width="3.6" height="5" rx="1.2" fill="#1e40af"/>
+      <rect x="8.2" y="17" width="3.6" height="5" rx="1.2" fill="#1e40af"/>
+      <rect x="-1" y="8.2" width="5" height="3.6" rx="1.2" fill="#1e40af"/>
+      <rect x="17" y="8.2" width="5" height="3.6" rx="1.2" fill="#1e40af"/>
+      <!-- Diagonal teeth -->
+      <rect x="14.5" y="1" width="3.6" height="5" rx="1.2" fill="#1e40af" transform="rotate(45 16.3 3.5)"/>
+      <rect x="1.5" y="14" width="3.6" height="5" rx="1.2" fill="#1e40af" transform="rotate(45 3.3 16.5)"/>
+      <rect x="1" y="1.5" width="5" height="3.6" rx="1.2" fill="#1e40af" transform="rotate(-45 3.5 3.3)"/>
+      <rect x="14" y="15" width="5" height="3.6" rx="1.2" fill="#1e40af" transform="rotate(-45 16.5 16.8)"/>
+    </g>
+  </g>
+
+  <!-- Project name -->
+  <text x="600" y="158" text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="42" font-weight="700" fill="white"
+        letter-spacing="-0.5">
+    deploy-to-aks
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="195" text-anchor="middle"
+        font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+        font-size="18" fill="white" opacity="0.85">
+    Deploy to Azure Kubernetes Service — no Kubernetes expertise required
+  </text>
+
+  <!-- Subtle bottom accent line -->
+  <rect x="450" y="228" width="300" height="2" rx="1" fill="white" opacity="0.2"/>
+</svg>
