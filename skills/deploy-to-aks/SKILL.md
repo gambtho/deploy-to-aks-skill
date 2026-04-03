@@ -56,7 +56,9 @@ At each phase, read the corresponding instruction file for detailed guidance:
 
 ### Knowledge Packs
 
-After detecting the framework in Phase 1, check `knowledge-packs/frameworks/` for a matching pack (e.g., `spring-boot.md`). Knowledge packs provide framework-specific guidance for Dockerfile patterns, health endpoints, environment variables, writable path requirements, and common deployment issues. If no pack exists for the detected framework, the skill continues with generic templates — packs enhance the output but are not required.
+After detecting the framework in Phase 1, check `knowledge-packs/frameworks/` for a matching pack. Knowledge packs provide framework-specific guidance for Dockerfile patterns, health endpoints, database configuration, writable path requirements, and common deployment issues. If no pack exists for the detected framework, the skill continues with generic templates — packs enhance the output but are not required.
+
+Available packs: `spring-boot`, `express`, `nextjs`, `fastapi`, `django`, `nestjs`, `aspnet-core`, `go`, `flask`
 
 ## Diagrams
 
