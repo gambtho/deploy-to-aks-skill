@@ -12,7 +12,7 @@ Guide developers through deploying applications to Azure Kubernetes Service (AKS
 You MUST create a todo for each of these items and complete them in order:
 
 1. **Discover** -- scan the project, detect framework/language/dependencies, ask clarifying questions
-2. **Architect** -- plan infrastructure, show architecture diagram + cost in visual companion, get approval
+2. **Architect** -- plan infrastructure, show architecture diagram + cost estimate, get approval
 3. **Containerize** -- generate or validate Dockerfile + .dockerignore
 4. **Scaffold** -- generate K8s manifests + Bicep IaC, validate against Deployment Safeguards
 5. **Pipeline** -- generate GitHub Actions CI/CD workflow, optionally configure OIDC
@@ -25,12 +25,12 @@ digraph deploy_flow {
     rankdir=LR;
     node [shape=box, style=rounded];
 
-    discover [label="1. Discover\n(terminal)"];
-    architect [label="2. Architect\n(visual)"];
-    containerize [label="3. Containerize\n(terminal)"];
-    scaffold [label="4. Scaffold\n(visual)"];
-    pipeline [label="5. Pipeline\n(terminal)"];
-    deploy [label="6. Deploy\n(visual)"];
+    discover [label="1. Discover"];
+    architect [label="2. Architect\n(mermaid)"];
+    containerize [label="3. Containerize"];
+    scaffold [label="4. Scaffold\n(mermaid)"];
+    pipeline [label="5. Pipeline"];
+    deploy [label="6. Deploy\n(mermaid)"];
 
     discover -> architect;
     architect -> containerize [label="approved"];
@@ -47,7 +47,7 @@ At each phase, read the corresponding instruction file for detailed guidance:
 
 | Phase | Read | Also load |
 |-------|------|-----------|
-| 1. Discover | `phases/01-discover.md` | -- |
+| 1. Discover | `phases/01-discover.md` | `knowledge-packs/frameworks/<detected>.md` (if exists) |
 | 2. Architect | `phases/02-architect.md` | `reference/cost-reference.md` |
 | 3. Containerize | `phases/03-containerize.md` | -- |
 | 4. Scaffold | `phases/04-scaffold.md` | `reference/safeguards.md`, `reference/workload-identity.md` |
@@ -56,19 +56,19 @@ At each phase, read the corresponding instruction file for detailed guidance:
 
 Load `reference/aks-automatic.md` or `reference/aks-standard.md` based on the developer's AKS flavor choice (detected in Phase 1).
 
-## Visual Companion
+### Knowledge Packs
 
-This skill uses the visual companion at three touchpoints:
-- **Phase 2:** Architecture diagram + cost estimate (use `visuals/architecture-diagram.html` as template)
-- **Phase 4:** Updated architecture diagram with actual resource names
-- **Phase 6:** Deployment summary dashboard (use `visuals/summary-dashboard.html` as template)
+After detecting the framework in Phase 1, check `knowledge-packs/frameworks/` for a matching pack (e.g., `spring-boot.md`). Knowledge packs provide framework-specific guidance for Dockerfile patterns, health endpoints, environment variables, writable path requirements, and common deployment issues. If no pack exists for the detected framework, the skill continues with generic templates — packs enhance the output but are not required.
 
-Start the visual companion server at Phase 2 using the brainstorming skill's server:
-```bash
-scripts/start-server.sh --project-dir <developer-project-root>
-```
+## Diagrams
 
-Decision comparison cards (`visuals/decision-card.html`) can be used at any phase when the developer faces a visual choice.
+This skill renders architecture diagrams as **mermaid code blocks** inline in the terminal — no browser or external dependencies required.
+
+- **Phase 2:** Architecture diagram + cost estimate (template: `templates/mermaid/architecture-diagram.md`)
+- **Phase 4:** Re-render architecture diagram with actual resource names from generated Bicep/K8s files
+- **Phase 6:** Deployment summary dashboard (template: `templates/mermaid/summary-dashboard.md`)
+
+Use terminal-native question prompts (not visual cards) when the developer faces a choice.
 
 ## Execution Model
 
@@ -89,3 +89,15 @@ Decision comparison cards (`visuals/decision-card.html`) can be used at any phas
 - Progressive discovery -- ask incrementally, confirm as you go
 - Sensible defaults -- AKS Automatic, Gateway API, Workload Identity, 2 replicas
 - No Kubernetes jargon until Phase 4 -- frame AKS as a "scalable app platform"
+
+## Housekeeping
+
+At any point during execution, if the project has a `.gitignore`, check whether agent working directories are excluded. Add entries for any that are missing:
+
+```
+# Agent working directories
+.claude/
+.superpowers/
+```
+
+These directories contain session-specific data and should never be committed to the repository.

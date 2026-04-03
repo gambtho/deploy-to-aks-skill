@@ -1,7 +1,7 @@
 # =============================================================================
 # Kubernetes Ingress Template — AKS Deploy Skill
 # =============================================================================
-# Use this template for AKS Standard clusters with the NGINX Ingress Controller.
+# Use this template for AKS Standard clusters with the Web App Routing add-on.
 # For AKS Automatic clusters, use gateway.yaml + httproute.yaml instead.
 #
 # REPLACE: <app-name>    — your application name (e.g., order-api)
@@ -17,13 +17,8 @@ metadata:
   namespace: <namespace>
   labels:
     app: <app-name>
-  annotations:
-    # NGINX-specific annotations — adjust for your ingress controller
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/use-regex: "false"
 spec:
-  ingressClassName: nginx
+  ingressClassName: webapprouting.kubernetes.azure.com
   # Uncomment for TLS — requires a Secret with the certificate
   # tls:
   #   - hosts:

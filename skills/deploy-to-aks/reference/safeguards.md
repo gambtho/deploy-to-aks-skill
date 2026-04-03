@@ -384,6 +384,39 @@ securityContext:
 If the app needs to write to specific paths, mount `emptyDir` volumes at those paths
 rather than making the entire root filesystem writable.
 
+### Common frameworks requiring writable paths
+
+Many popular frameworks write temporary files at runtime. When `readOnlyRootFilesystem: true`
+is set, these frameworks will fail unless you mount `emptyDir` volumes at the required paths.
+
+| Framework | Path | Why |
+|-----------|------|-----|
+| **Spring Boot** (Java) | `/tmp` | Tomcat writes session data, multipart uploads, and compiled JSPs to `/tmp` |
+| **ASP.NET Core** (.NET) | `/tmp` | Data protection keys, temp file uploads |
+| **Django** (Python) | `/tmp` | File upload handlers use temp directory |
+| **Express/Node.js** | `/tmp` | `multer` and other middleware write temp files |
+| **Ruby on Rails** | `/tmp` | Cache store, session files, PID files |
+| **Go** (various) | `/tmp` | `os.CreateTemp` default directory |
+
+Add the corresponding volume and volumeMount to the Deployment manifest:
+
+```yaml
+spec:
+  template:
+    spec:
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      containers:
+        - name: app
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+```
+
+If the framework's knowledge pack (see `knowledge-packs/frameworks/`) specifies additional
+writable paths, mount those as well.
+
 ---
 
 ## DS013 — automountServiceAccountToken Should Be False

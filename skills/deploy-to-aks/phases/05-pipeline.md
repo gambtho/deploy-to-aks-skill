@@ -32,7 +32,15 @@ Customize all placeholders with real values discovered in Phase 1 and scaffolded
 | `__NAMESPACE__`   | Kubernetes namespace from Phase 4 scaffold  |
 | `__APP_NAME__`    | Application name from Phase 1               |
 
-Write the customized workflow to `.github/workflows/deploy.yml`.
+### Workflow filename
+
+Choose the filename based on what already exists in `.github/workflows/`:
+
+- **No existing deploy workflow:** use `deploy.yml`
+- **Existing workflow named `deploy.yml`:** use `deploy-aks-<flavor>.yml` (e.g., `deploy-aks-automatic.yml`)
+- **Developer chose to create alongside existing workflows (Phase 1):** use `deploy-aks-<flavor>.yml` to avoid any naming collision
+
+Write the customized workflow to `.github/workflows/<chosen-filename>`.
 
 Show the developer the final workflow content and confirm before writing.
 
@@ -119,7 +127,7 @@ Confirm that `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` a
 Offer to trigger a manual workflow run to validate the full pipeline end-to-end:
 
 ```bash
-gh workflow run deploy.yml
+gh workflow run <workflow-filename>
 ```
 
 Then monitor the run:

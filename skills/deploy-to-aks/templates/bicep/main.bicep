@@ -89,7 +89,7 @@ module postgresql 'postgresql.bicep' = if (enablePostgresql) {
     location: location
     administratorLogin: postgresAdminLogin
     administratorPrincipalId: identity.outputs.identityPrincipalId
-    administratorPrincipalName: identity.outputs.identityClientId
+    administratorPrincipalName: identity.outputs.identityName
   }
 }
 
@@ -128,3 +128,9 @@ output aksOidcIssuerUrl string = aks.outputs.oidcIssuerUrl
 
 @description('Client ID of the workload managed identity.')
 output workloadIdentityClientId string = identity.outputs.identityClientId
+
+@description('Name of the Azure Container Registry.')
+output acrName string = acr.outputs.acrName
+
+@description('Name of the AKS cluster (alias for aksClusterName, used by deploy scripts).')
+output aksName string = aks.outputs.clusterName

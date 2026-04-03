@@ -63,11 +63,12 @@ USER appuser
 
 EXPOSE 8080
 
-# JVM container-awareness: UseContainerSupport is on by default in JDK 10+,
-# MaxRAMPercentage caps heap relative to the container memory limit.
+# MaxRAMPercentage caps heap relative to the container memory limit
+# (container-aware by default in JDK 21).
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD ["wget", "--quiet", "--spider", "http://localhost:8080/actuator/health"]
+# No HEALTHCHECK: the JRE Alpine image does not include wget or curl.
+# Kubernetes liveness/readiness probes (configured in deployment.yaml) handle
+# health checking in AKS.
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]

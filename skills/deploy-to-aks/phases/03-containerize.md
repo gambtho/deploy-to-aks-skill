@@ -14,6 +14,8 @@ Search the repository root for `Dockerfile`, `Dockerfile.*`, or `*.Dockerfile`.
 
 Validate it against the **Best-Practices Checklist** below. For every item that fails, note the specific line and the recommended fix. Present all findings to the user before making changes.
 
+Also check for `.dockerignore` at the repository root. If it is missing, flag it — even if the Dockerfile passes all other checks, a missing `.dockerignore` means build context will include unnecessary files (`.git/`, `node_modules/`, etc.), slowing builds and potentially leaking secrets into the image. Proceed to Step 3 to generate it.
+
 ### If no Dockerfile exists
 
 Generate one from the appropriate template in `templates/dockerfiles/` based on the framework detected in **Phase 1** (discovery). Proceed to Step 2.
@@ -140,4 +142,4 @@ Phase 3 is complete when:
 - [ ] A `.dockerignore` exists with universal + framework-specific entries
 - [ ] (Optional) A local `docker build` succeeds and produces a reasonably sized image
 
-Proceed to **Phase 4 — Registry** to push the image to Azure Container Registry.
+Proceed to **Phase 4 — Scaffold** to generate Kubernetes manifests and Bicep infrastructure.

@@ -54,11 +54,11 @@ Selected Services:
 
 ## Step 2: Generate Architecture Diagram
 
-Generate an HTML architecture diagram so the developer can see the full topology before any infrastructure code is written.
+Generate a mermaid architecture diagram so the developer can see the full topology before any infrastructure code is written.
 
 ### 2a: Read the Template
 
-Read the file `visuals/architecture-diagram.html` from the skill's directory. This template contains an HTML page with an SVG-based architecture diagram and placeholder tokens.
+Read the file `templates/mermaid/architecture-diagram.md` from the skill's directory. This template contains a mermaid flowchart with placeholder tokens.
 
 ### 2b: Replace Placeholders
 
@@ -92,19 +92,15 @@ The generated diagram **must** show:
 5. **Backing Azure services** — each as a separate box outside the cluster boundary (PostgreSQL, Cosmos DB, Redis, Key Vault, Storage, etc.), connected to the relevant Deployment(s) via dashed arrows labeled "Workload Identity".
 6. **Monitoring** — Log Analytics + Application Insights shown as a box receiving telemetry from the cluster and backing services.
 
-### 2d: Write the Diagram
+### 2d: Render the Diagram
 
-Write the fully-resolved HTML to the visual companion path so it can be opened in the developer's browser:
+Output the fully-resolved mermaid diagram as a fenced code block in the terminal. The developer sees the architecture inline — no browser required.
 
-```
-visuals/architecture-diagram.html → write to the visual companion output location
-```
-
-Use the Write tool. The file must be self-contained HTML (inline CSS, inline SVG or inline JS — no external dependencies) so it renders correctly when opened with `open` / `xdg-open`.
+If the diagram is complex (many backing services), also output a simplified text version as a fallback.
 
 ### 2e: Validate
 
-After writing, confirm the file exists and is valid HTML. Do **not** skip this — a broken diagram erodes trust in the entire skill.
+After rendering, verify the mermaid syntax is valid by checking that all node references are consistent (no dangling edges to undefined nodes). If a backing service was removed from the architecture contract, ensure its node and edges are also removed from the diagram.
 
 ---
 
@@ -154,15 +150,9 @@ Produce a cost breakdown in table format:
 
 ## Step 4: Present to Developer
 
-### 4a: Open the Diagram
+### 4a: Show the Diagram
 
-Open the architecture diagram HTML file in the developer's default browser:
-
-- **macOS:** `open visuals/architecture-diagram.html`
-- **Linux:** `xdg-open visuals/architecture-diagram.html`
-- **WSL/Windows:** `wslview visuals/architecture-diagram.html` or `explorer.exe visuals/architecture-diagram.html`
-
-If the open command fails, print the absolute file path and instruct the developer to open it manually.
+The mermaid diagram was already rendered inline in Step 2d. Reference it here — do not re-render unless the developer requested changes in Step 5.
 
 ### 4b: Terminal Summary
 

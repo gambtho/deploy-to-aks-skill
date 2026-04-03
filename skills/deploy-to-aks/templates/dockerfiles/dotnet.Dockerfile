@@ -46,7 +46,7 @@ WORKDIR /app
 COPY --from=build /app/publish ./
 
 # AKS Deployment Safeguards DS004: run as non-root.
-# The "app" user (uid 1654) is built into the aspnet image since .NET 8.
+# The "app" user is built into the aspnet image since .NET 8.
 USER app
 
 EXPOSE 8080
@@ -55,7 +55,9 @@ ENV ASPNETCORE_URLS="http://+:8080" \
     DOTNET_RUNNING_IN_CONTAINER=true \
     DOTNET_EnableDiagnostics=0
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD ["curl", "--fail", "--silent", "http://localhost:8080/healthz"]
+# No HEALTHCHECK: the aspnet runtime image does not include curl or wget.
+# Kubernetes liveness/readiness probes (configured in deployment.yaml) handle
+# health checking in AKS. For local Docker usage, install wget or add
+# app.MapHealthChecks("/healthz") and use a custom health check binary.
 
 ENTRYPOINT ["dotnet", "MyApp.dll"]

@@ -222,6 +222,30 @@ When scanning produces unexpected results, handle them gracefully:
 
 ---
 
+## Step 5: Load Framework Knowledge Pack
+
+After confirming the framework in Step 3, check if a knowledge pack exists for the detected framework:
+
+```
+knowledge-packs/frameworks/<framework>.md
+```
+
+Where `<framework>` is the lowercase framework name (e.g., `spring-boot`, `django`, `express`, `aspnet-core`).
+
+**If a knowledge pack exists:** Read it and use the framework-specific guidance throughout subsequent phases:
+- Phase 3 (Containerize): Use the pack's Dockerfile patterns and health endpoint configuration
+- Phase 4 (Scaffold): Use the pack's probe settings, writable path requirements, env var patterns, and ConfigMap structure
+- Phase 6 (Deploy): Use the pack's common issues table for troubleshooting
+
+**If no knowledge pack exists:** Continue with generic templates. The skill works without a knowledge pack — packs enhance the output with framework-specific best practices but are not required.
+
+Currently available knowledge packs:
+- `spring-boot` — Spring Boot (Java)
+
+Additional packs can be added to `knowledge-packs/frameworks/` as needed.
+
+---
+
 ## Output
 
 By the end of Phase 1, the following data points **must** be known (either auto-detected or confirmed by the developer). If any are missing, do **not** proceed to Phase 2 — loop back and ask.

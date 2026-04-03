@@ -76,7 +76,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2025-03-01' = {
   }
   properties: {
     // Kubernetes version — omit to let Azure pick the latest stable
-    kubernetesVersion: empty(kubernetesVersion) ? null : kubernetesVersion
+    kubernetesVersion: empty(kubernetesVersion) ? json('null') : kubernetesVersion
     dnsPrefix: '${appName}-dns'
 
     // --- Agent pool profiles (Standard mode only) ---
@@ -96,17 +96,18 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2025-03-01' = {
           {
             name: 'systempool'
             mode: 'System'
-            count: 1 // NAP manages the actual scaling
-            vmSize: 'Standard_DS4_v2'
+            count: 3
           }
         ]
 
-    // --- Network profile ---
-    networkProfile: {
-      networkPlugin: 'azure'
-      networkPluginMode: 'overlay'
-      networkDataplane: 'cilium'
-    }
+    // --- Network profile (Standard only; Automatic manages networking) ---
+    networkProfile: aksType == 'Standard'
+      ? {
+          networkPlugin: 'azure'
+          networkPluginMode: 'overlay'
+          networkDataplane: 'cilium'
+        }
+      : null
 
     // --- OIDC & Workload Identity ---
     oidcIssuerProfile: {
@@ -126,14 +127,6 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2025-03-01' = {
           logAnalyticsWorkspaceResourceID: workspaceId
         }
       }
-      // NGINX ingress via web app routing (Standard mode only)
-      ...(aksType == 'Standard'
-        ? {
-            ingressApplicationGateway: {
-              enabled: false
-            }
-          }
-        : {})
     }
 
     // Web app routing add-on for Standard clusters

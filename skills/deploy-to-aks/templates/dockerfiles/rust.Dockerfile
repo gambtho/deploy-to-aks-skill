@@ -36,6 +36,7 @@ RUN mkdir src \
     && echo 'fn main() { println!("placeholder"); }' > src/main.rs \
     && cargo build --release \
     && rm -rf src target/release/deps/app* target/release/app*
+    # ↑ Update "app*" if your Cargo.toml binary name differs
 
 # 2. Copy real source and build the actual binary.
 COPY src ./src

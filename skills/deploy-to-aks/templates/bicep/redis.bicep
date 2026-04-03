@@ -23,7 +23,7 @@ param location string
   'Standard'
   'Premium'
 ])
-param skuName string = 'Standard'
+param skuName string = 'Basic'
 
 @description('SKU family. Use "C" for Basic/Standard, "P" for Premium.')
 @allowed([
@@ -35,7 +35,7 @@ param skuFamily string = 'C'
 @description('SKU capacity (cache size). For C family: 0-6; for P family: 1-5.')
 @minValue(0)
 @maxValue(6)
-param skuCapacity int = 1
+param skuCapacity int = 0
 
 @description('Minimum TLS version required by clients.')
 @allowed([

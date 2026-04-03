@@ -3,7 +3,7 @@
 ## Goal
 
 Generate production-ready Kubernetes manifests and Bicep infrastructure modules for the
-architecture approved in Phase 3 (Design). Every generated manifest must pass all 13 AKS
+architecture approved in Phase 2 (Architect). Every generated manifest must pass all 13 AKS
 Deployment Safeguard rules. Every Bicep module must compose cleanly through a single
 `main.bicep` entry point.
 
@@ -109,6 +109,23 @@ Skip rules that don't apply to the resource kind being checked.
 
 Generate Bicep infrastructure modules **one file at a time** in the `infra/` directory.
 
+### Output directory layout
+
+The skill's Bicep templates are flat files in `templates/bicep/`. When generating the target project's infrastructure, reorganize them into a nested structure:
+
+```
+infra/
+├── main.bicep              ← orchestrator (from templates/bicep/main.bicep)
+├── main.bicepparam         ← parameter file with environment-specific values
+└── modules/
+    ├── aks.bicep           ← from templates/bicep/aks.bicep
+    ├── acr.bicep           ← from templates/bicep/acr.bicep
+    ├── identity.bicep      ← from templates/bicep/identity.bicep
+    └── [backing-service].bicep  ← only modules for services in the architecture contract
+```
+
+`main.bicep` and `main.bicepparam` go in `infra/`. All other modules go in `infra/modules/`. The `main.bicep` references modules via relative paths (e.g., `'modules/aks.bicep'`).
+
 ### Generation order
 
 1. `infra/main.bicep` — orchestrator that composes all modules
@@ -123,6 +140,12 @@ Generate Bicep infrastructure modules **one file at a time** in the `infra/` dir
 7. `infra/modules/identity.bicep` — Managed Identity + Federated Credential
    (reference: `templates/bicep/identity.bicep`)
 8. Additional modules as required by the approved architecture.
+
+### Module selection rule
+
+**Only generate Bicep modules for services listed in the approved architecture contract from Phase 2.** If the architecture contract does not include a database, do not generate `postgres.bicep`. If it does not include secrets management, do not generate `keyvault.bicep`. If it does not include caching, do not generate `redis.bicep`.
+
+When customizing `main.bicep` from the template, **remove conditional module blocks** for services that are not in the architecture contract. Do not leave dead `module` declarations with `if (false)` or commented-out blocks — remove them entirely so the Bicep is clean and readable.
 
 ### Template usage
 
@@ -143,7 +166,7 @@ should reference another module directly — all cross-module dependencies flow 
 
 ## Step 5 — Update Architecture Diagram
 
-Update the visual companion (architecture diagram from Phase 3) with actual resource
+Update the architecture diagram (from Phase 2) with actual resource
 names now that manifests have been generated.
 
 ### What to update
@@ -155,8 +178,8 @@ names now that manifests have been generated.
 
 ### Format
 
-Present the updated diagram as a Mermaid diagram in a fenced code block so it can be
-rendered in the user's editor or documentation.
+Re-render the mermaid architecture diagram (from `templates/mermaid/architecture-diagram.md`) with actual resource names so the developer
+can see the updated topology inline.
 
 ---
 

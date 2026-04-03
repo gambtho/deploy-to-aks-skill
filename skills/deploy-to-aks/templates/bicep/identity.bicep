@@ -68,5 +68,8 @@ output identityClientId string = managedIdentity.properties.clientId
 @description('Principal (object) ID of the managed identity (used for Azure role assignments).')
 output identityPrincipalId string = managedIdentity.properties.principalId
 
+@description('Display name of the managed identity (used as the PostgreSQL AAD admin principal name).')
+output identityName string = managedIdentity.name
+
 @description('Full resource ID of the managed identity.')
 output identityResourceId string = managedIdentity.id

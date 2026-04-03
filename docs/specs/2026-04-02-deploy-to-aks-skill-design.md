@@ -95,7 +95,6 @@ skills/deploy-to-aks/
     github-actions/               # CI/CD workflow templates
   visuals/
     architecture-diagram.html     # HTML template for architecture diagrams
-    progress-tracker.html         # Journey progress bar
     decision-card.html            # Comparison card template
     summary-dashboard.html        # Final deployment summary
 ```

@@ -29,7 +29,7 @@ RUN go mod download && go mod verify
 # Copy source and compile a static binary
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+RUN CGO_ENABLED=0 GOOS=linux \
     go build -ldflags="-s -w" -o /bin/app ./cmd/app
 
 # ---------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Execute the deployment to Azure Kubernetes Service with **confirmation gates at every destructive step**. No Azure resource is created, no image is pushed, and no manifest is applied without the developer's explicit approval. After successful deployment, render a summary dashboard in the visual companion showing the live application URL, Azure portal links, cost estimates, and next steps.
+Execute the deployment to Azure Kubernetes Service with **confirmation gates at every destructive step**. No Azure resource is created, no image is pushed, and no manifest is applied without the developer's explicit approval. After successful deployment, render a summary dashboard in the terminal showing the live application URL, Azure portal links, cost estimates, and next steps.
 
 This is the only phase that mutates cloud state. Treat every command with the gravity it deserves.
 
@@ -234,14 +234,13 @@ This will run:
 
   az acr build \
     --registry <acr-name> \
-    --image <app-name>:latest \
     --image <app-name>:<git-sha-short> \
     .
 
 This builds the Docker image in the cloud using ACR Tasks — no local Docker
 daemon is needed. The image is built on Azure's infrastructure and pushed
-directly into the registry. Two tags are applied: "latest" and the short
-git SHA for traceability.
+directly into the registry. The image is tagged with the short git SHA for
+traceability (not :latest, per DS009).
 
 Want me to proceed? [Yes / No, I'll do it myself]
 ```
@@ -257,7 +256,6 @@ Full command:
 ```bash
 az acr build \
   --registry "$ACR_NAME" \
-  --image "myapp:latest" \
   --image "myapp:$GIT_SHA" \
   .
 ```
@@ -437,7 +435,7 @@ Verification results:
 
 ## Step 8: Summary Dashboard
 
-Write a deployment summary to the visual companion using the `visuals/summary-dashboard.html` template.
+Render a deployment summary in the terminal using the `templates/mermaid/summary-dashboard.md` template.
 
 ### Content to render:
 
@@ -597,7 +595,7 @@ az deployment group create \
 # - Dependency install failure    → fix package.json / requirements.txt / go.mod
 
 # Retry:
-az acr build --registry <acr-name> --image <app-name>:latest .
+az acr build --registry <acr-name> --image <app-name>:<git-sha> .
 ```
 
 ### kubectl apply Failed (Step 6b)
@@ -669,7 +667,7 @@ This phase is complete when ALL of the following are true:
 - [ ] Kubernetes manifests are applied to AKS
 - [ ] All pods are in `Running` state
 - [ ] External endpoint is reachable
-- [ ] Summary dashboard is rendered in the visual companion
+- [ ] Summary dashboard is rendered in the terminal
 - [ ] Developer has been offered the chance to commit artifacts
 
 **The application is now live.** Congratulate the developer and point them to the Next Steps in the dashboard.

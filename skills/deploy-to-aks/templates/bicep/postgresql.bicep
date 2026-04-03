@@ -7,6 +7,7 @@
 //   - postgresVersion: pin to a specific major version
 //   - databaseName: change to match your application schema
 //   - administratorLogin: local admin credential (used alongside Entra ID auth)
+//   - administratorPrincipalId / administratorPrincipalName: managed identity for Entra ID auth (required, no defaults)
 // ============================================================================
 
 // ---------------------------------------------------------------------------

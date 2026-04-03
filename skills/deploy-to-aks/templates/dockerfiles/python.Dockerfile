@@ -50,8 +50,7 @@ WORKDIR /app
 RUN groupadd --gid 1000 appuser \
     && useradd --uid 1000 --gid appuser --shell /bin/sh --create-home appuser
 
-# Copy the virtual environment from the build stage
-COPY --from=build --chown=appuser:appuser /app/venv /app/venv
+# Copy the virtual environment and application source from the build stage
 COPY --from=build --chown=appuser:appuser /app /app
 
 ENV PATH="/app/venv/bin:$PATH" \

@@ -22,7 +22,7 @@ param location string
   'Standard'
   'Premium'
 ])
-param acrSku string = 'Standard'
+param acrSku string = 'Basic'
 
 @description('Object ID of the AKS kubelet managed identity to grant AcrPull access.')
 param kubeletIdentityObjectId string
@@ -44,7 +44,7 @@ var acrPullRoleDefinitionId = subscriptionResourceId(
 // Container Registry
 // ---------------------------------------------------------------------------
 
-resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
+resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: acrName
   location: location
   sku: {
