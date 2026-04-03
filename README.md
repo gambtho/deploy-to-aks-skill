@@ -13,7 +13,7 @@ The skill walks you through 6 phases:
 | Phase | Name | What happens |
 |-------|------|-------------|
 | 1 | **Discover** | Scans your project, detects framework/language/dependencies, asks clarifying questions |
-| 2 | **Architect** | Plans infrastructure, shows architecture diagram + cost estimate in browser, gets your approval |
+| 2 | **Architect** | Plans infrastructure, shows architecture diagram + cost estimate, gets your approval |
 | 3 | **Containerize** | Generates or validates Dockerfile + .dockerignore |
 | 4 | **Scaffold** | Generates K8s manifests + Bicep IaC, validates against AKS Deployment Safeguards |
 | 5 | **Pipeline** | Generates GitHub Actions CI/CD workflow, optionally sets up OIDC federation |
@@ -39,17 +39,17 @@ Node.js (Express, Fastify, Next.js, Nest), Python (Flask, FastAPI, Django), Java
 
 ```
 skills/deploy-to-aks/
-  SKILL.md              # Coordinator skill
-  phases/               # Per-phase instruction files
-  reference/            # AKS domain knowledge docs
-  templates/            # Dockerfile, K8s, Bicep, CI/CD templates
-  visuals/              # HTML templates for visual companion
-docs/specs/             # Design specifications
+  SKILL.md                          # Coordinator — entry point
+  phases/                           # Per-phase instruction files (01–06)
+  reference/                        # AKS domain knowledge docs
+  templates/                        # Dockerfile, K8s, Bicep, CI/CD, mermaid templates
+  knowledge-packs/frameworks/       # Framework-specific deployment guidance
+docs/specs/                         # Design specifications
 ```
 
 ## Status
 
-Design spec complete. Implementation in progress.
+v1 complete. Tested against [spring-petclinic](https://github.com/spring-projects/spring-petclinic).
 
 ## Inspiration
 

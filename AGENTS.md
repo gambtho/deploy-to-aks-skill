@@ -1,0 +1,50 @@
+# AGENTS.md
+
+## Project overview
+
+This repository contains the **deploy-to-aks** OpenCode skill — a phased, conversational guide that deploys web applications to Azure Kubernetes Service (AKS) without requiring Kubernetes expertise. It is not a runnable application; it is a collection of markdown instruction files, reference documents, and templates consumed by an AI coding agent at runtime.
+
+## Repository structure
+
+```
+skills/deploy-to-aks/
+  SKILL.md                          # Coordinator — entry point the agent reads first
+  phases/                           # 6 ordered instruction files (01-discover through 06-deploy)
+  reference/                        # AKS domain knowledge (safeguards, cost, workload identity, AKS flavors)
+  templates/
+    bicep/                          # Bicep IaC module templates
+    dockerfiles/                    # Multi-stage Dockerfile templates per language
+    github-actions/                 # CI/CD workflow template
+    k8s/                            # Kubernetes manifest templates
+    mermaid/                        # Mermaid diagram templates for terminal rendering
+  knowledge-packs/frameworks/       # Framework-specific deployment guidance (e.g., spring-boot.md)
+docs/specs/                         # Design spec and implementation plan
+```
+
+## Key conventions
+
+- **IaC is Bicep only.** No Terraform. All infrastructure templates use Azure Bicep modules.
+- **CI/CD is GitHub Actions only.** The single workflow template lives in `templates/github-actions/deploy.yml`.
+- **AKS flavors:** AKS Automatic (default/recommended) and AKS Standard. Templates and phases handle both via conditionals.
+- **Diagrams are mermaid code blocks** rendered inline in the terminal. There are no HTML files or browser dependencies.
+- **Placeholder styles differ by template type:**
+  - Kubernetes manifests use `<angle-bracket>` placeholders (e.g., `<app-name>`, `<port>`)
+  - Bicep templates use standard Bicep `param` declarations
+  - GitHub Actions workflow uses `__DOUBLE_UNDERSCORE__` placeholders (e.g., `__ACR_NAME__`)
+- **Knowledge packs** are optional, framework-specific markdown files in `knowledge-packs/frameworks/`. They augment but never replace the core phase instructions.
+
+## Editing guidelines
+
+- **Phase files (`phases/*.md`)** are the core logic. Each phase is self-contained and references templates/references it needs. When editing a phase, also check `SKILL.md`'s phase table to ensure the "Also load" column stays accurate.
+- **Templates** are meant to be copied and adapted per-project by the agent at runtime. They should remain generic with clear placeholders — never hardcode project-specific values.
+- **Reference files** are factual documentation. Keep them current with Azure/AKS upstream changes. The safeguards reference (`reference/safeguards.md`) maps directly to AKS Deployment Safeguard policy IDs (DS001-DS013).
+- **SKILL.md** is the coordinator file read by the agent first. Its checklist, phase table, and key principles section must stay in sync with the phase files.
+- Do not add Terraform, Helm charts, or alternative CI/CD providers. Those are explicitly out of scope for v1.
+
+## Testing
+
+There are no automated tests. The skill is validated by running it against real projects (e.g., `spring-petclinic`) inside OpenCode and verifying the generated artifacts are correct and the phases flow properly. When making changes, mentally trace through the 6-phase flow to ensure consistency.
+
+## Commit style
+
+Follow conventional commits: `feat:`, `fix:`, `docs:`, `chore:`. Most changes to phase files or templates are `fix:` (improving existing behavior) or `feat:` (adding new capability like a knowledge pack).
