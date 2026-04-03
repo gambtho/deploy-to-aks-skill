@@ -46,9 +46,9 @@ param postgresVersion string = '16'
 @description('Local administrator login name.')
 param administratorLogin string
 
-@description('Local administrator password. Must be at least 8 characters.')
+@description('Local administrator password. Must be at least 8 characters. Required when passwordAuth is Enabled.')
 @secure()
-param administratorLoginPassword string = newGuid()
+param administratorLoginPassword string
 
 @description('Principal (object) ID of the managed identity to set as Azure AD administrator.')
 param administratorPrincipalId string

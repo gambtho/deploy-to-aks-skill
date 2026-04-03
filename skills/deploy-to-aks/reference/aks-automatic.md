@@ -124,39 +124,9 @@ Common things that will be rejected in Enforcement mode:
 
 Workload Identity is the **mandatory** approach for authenticating pods to Azure services. Do not use connection strings, storage keys, or `imagePullSecrets` for ACR.
 
-### Identity Chain
+The identity chain flows: **Managed Identity → Federated Credential → Kubernetes ServiceAccount → Pod**. ACR pull access is granted by assigning the `AcrPull` role to the cluster's kubelet identity (see `templates/bicep/acr.bicep` for the role assignment template).
 
-```
-Azure Managed Identity
-  └─► Federated Credential (trusts the cluster's OIDC issuer + specific namespace/serviceaccount)
-        └─► Kubernetes ServiceAccount (annotated with client ID)
-              └─► Pod (uses the ServiceAccount via projected token volume — injected automatically)
-```
-
-### How it works
-
-1. A **User-Assigned Managed Identity** is created in Azure and granted RBAC roles (e.g., `AcrPull` for container registry, `Key Vault Secrets User` for secrets).
-2. A **Federated Identity Credential** is created on that Managed Identity, configured to trust tokens issued by the AKS cluster's OIDC issuer for a specific `namespace` and `serviceAccountName`.
-3. A **Kubernetes ServiceAccount** is created with the annotation `azure.workload.identity/client-id: <managed-identity-client-id>`.
-4. The **Pod** spec references that ServiceAccount and sets the label `azure.workload.identity/use: "true"`. The mutating webhook injects environment variables and a projected token volume automatically.
-
-### ACR access without imagePullSecrets
-
-Assign the `AcrPull` role to the cluster's kubelet identity on the ACR resource. This grants pull access cluster-wide — no `imagePullSecrets` needed in pod specs.
-
-```bicep
-resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(acr.id, cluster.id, 'AcrPull')
-  scope: acr
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
-    principalId: cluster.properties.identityProfile.kubeletidentity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}
-```
-
-**See `workload-identity.md` for full Bicep and Kubernetes manifest examples.**
+**See `workload-identity.md` for the full setup guide, Bicep examples, and Kubernetes manifest examples.**
 
 ## Monitoring
 

@@ -45,11 +45,15 @@ param workloadServiceAccount string = '${appName}-sa'
 @description('PostgreSQL administrator login name (used only when enablePostgresql is true).')
 param postgresAdminLogin string = '${appName}admin'
 
+@description('PostgreSQL administrator password (used only when enablePostgresql is true). Must be at least 8 characters.')
+@secure()
+param postgresAdminPassword string = ''
+
 // ---------------------------------------------------------------------------
 // Modules – always deployed
 // ---------------------------------------------------------------------------
 
-module aks 'modules/aks.bicep' = {
+module aks './aks.bicep' = {
   name: '${appName}-aks'
   params: {
     appName: appName
@@ -58,7 +62,7 @@ module aks 'modules/aks.bicep' = {
   }
 }
 
-module acr 'modules/acr.bicep' = {
+module acr './acr.bicep' = {
   name: '${appName}-acr'
   params: {
     appName: appName
@@ -67,7 +71,7 @@ module acr 'modules/acr.bicep' = {
   }
 }
 
-module identity 'modules/identity.bicep' = {
+module identity './identity.bicep' = {
   name: '${appName}-identity'
   params: {
     appName: appName
@@ -82,18 +86,19 @@ module identity 'modules/identity.bicep' = {
 // Modules – conditionally deployed
 // ---------------------------------------------------------------------------
 
-module postgresql 'modules/postgresql.bicep' = if (enablePostgresql) {
+module postgresql './postgresql.bicep' = if (enablePostgresql) {
   name: '${appName}-postgresql'
   params: {
     appName: appName
     location: location
     administratorLogin: postgresAdminLogin
+    administratorLoginPassword: postgresAdminPassword
     administratorPrincipalId: identity.outputs.identityPrincipalId
     administratorPrincipalName: identity.outputs.identityName
   }
 }
 
-module redis 'modules/redis.bicep' = if (enableRedis) {
+module redis './redis.bicep' = if (enableRedis) {
   name: '${appName}-redis'
   params: {
     appName: appName
@@ -102,7 +107,7 @@ module redis 'modules/redis.bicep' = if (enableRedis) {
   }
 }
 
-module keyvault 'modules/keyvault.bicep' = if (enableKeyvault) {
+module keyvault './keyvault.bicep' = if (enableKeyvault) {
   name: '${appName}-keyvault'
   params: {
     appName: appName
@@ -132,6 +137,3 @@ output workloadIdentityClientId string = identity.outputs.identityClientId
 
 @description('Name of the Azure Container Registry.')
 output acrName string = acr.outputs.acrName
-
-@description('Name of the AKS cluster (alias for aksClusterName, used by deploy scripts).')
-output aksName string = aks.outputs.clusterName

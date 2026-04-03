@@ -4,7 +4,7 @@
 # Customize the following before use:
 #   - APP_MODULE:  Change the uvicorn target (e.g. "app.main:app" for FastAPI,
 #                  "myproject.wsgi:application" for Django with gunicorn)
-#   - PORT:        Change EXPOSE and HEALTHCHECK port if not 8000
+#   - PORT:        Change EXPOSE port if not 8000
 #   - DEPS FILE:   If using Poetry, replace requirements.txt steps with
 #                  "poetry export -f requirements.txt" in the build stage
 #   - ENTRY_POINT: Adjust the final CMD for your framework (gunicorn, uvicorn,
@@ -39,11 +39,6 @@ COPY . .
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim
 
-# Install curl for the HEALTHCHECK (minimal addition to slim image)
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 # AKS Deployment Safeguards DS004: create and switch to a non-root user
@@ -61,7 +56,8 @@ USER appuser
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD ["curl", "--fail", "--silent", "http://localhost:8000/healthz"]
+# HEALTHCHECK is omitted — Kubernetes liveness/readiness probes handle health
+# checks in AKS. Adding a Dockerfile HEALTHCHECK would require installing curl
+# in the runtime image, increasing size and attack surface.
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

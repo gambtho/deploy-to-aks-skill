@@ -16,10 +16,9 @@ metadata:
   namespace: <namespace>
   labels:
     app: <app-name>
-data:
+data: {}
   # Add application configuration as key-value pairs.
   # Example:
   #   LOG_LEVEL: "info"
   #   ASPNETCORE_ENVIRONMENT: "Production"
   #   SPRING_PROFILES_ACTIVE: "prod"
-  {}

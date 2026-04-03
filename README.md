@@ -56,7 +56,7 @@ your-project/
 ## Installation
 
 ```bash
-git clone https://github.com/<owner>/deploy-to-aks-skill.git
+git clone https://github.com/gambtho/deploy-to-aks-skill.git
 cd deploy-to-aks-skill
 ./install.sh
 ```
@@ -70,7 +70,7 @@ The script prompts for your platform and whether to install globally or into a s
 **Global install** (available in all your projects):
 
 ```bash
-git clone https://github.com/<owner>/deploy-to-aks-skill.git
+git clone https://github.com/gambtho/deploy-to-aks-skill.git
 ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.claude/skills/deploy-to-aks
 ```
 
@@ -126,7 +126,7 @@ instructions phase by phase. Do not skip phases or reorder them.
 **Global install** (available in all your projects):
 
 ```bash
-git clone https://github.com/<owner>/deploy-to-aks-skill.git
+git clone https://github.com/gambtho/deploy-to-aks-skill.git
 mkdir -p ~/.config/opencode/skills
 ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.config/opencode/skills/deploy-to-aks
 ```

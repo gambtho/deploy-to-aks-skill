@@ -31,6 +31,32 @@ prompt_choice() {
     done
 }
 
+confirm_replace() {
+    local target="$1"
+    if [[ -e "$target" ]]; then
+        info "Existing installation found at $target"
+        read -rp "Replace it? [y/N]: " confirm
+        [[ "$confirm" =~ ^[yY]$ ]] || { info "Aborted."; exit 0; }
+        rm -rf "$target"
+    fi
+}
+
+install_skill() {
+    local target="$1"
+    local method="$2"  # "symlink" or "copy"
+    local parent
+    parent="$(dirname "$target")"
+    mkdir -p "$parent"
+    confirm_replace "$target"
+    if [[ "$method" == "symlink" ]]; then
+        ln -s "$SKILL_SOURCE" "$target"
+        info "Symlinked $SKILL_SOURCE → $target"
+    else
+        cp -r "$SKILL_SOURCE" "$target"
+        info "Copied skill to $target"
+    fi
+}
+
 # --- Validation ---
 
 if [[ ! -f "$SKILL_SOURCE/SKILL.md" ]]; then
@@ -45,9 +71,15 @@ PROJECT_DIR=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --platform) PLATFORM="$2"; shift 2 ;;
-        --scope) SCOPE="$2"; shift 2 ;;
-        --project-dir) PROJECT_DIR="$2"; shift 2 ;;
+        --platform)
+            [[ $# -ge 2 ]] || die "--platform requires a value"
+            PLATFORM="$2"; shift 2 ;;
+        --scope)
+            [[ $# -ge 2 ]] || die "--scope requires a value"
+            SCOPE="$2"; shift 2 ;;
+        --project-dir)
+            [[ $# -ge 2 ]] || die "--project-dir requires a value"
+            PROJECT_DIR="$2"; shift 2 ;;
         -h|--help)
             echo "Usage: ./install.sh [--platform claude-code|copilot|opencode] [--scope global|project] [--project-dir <path>]"
             echo ""
@@ -94,8 +126,9 @@ if [[ -z "$SCOPE" ]]; then
 fi
 
 if [[ "$SCOPE" == "project" && -z "$PROJECT_DIR" ]]; then
-    read -rp "Project directory [$(pwd)]: " PROJECT_DIR
-    PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
+    _cwd="$(pwd)"
+    read -rp "Project directory [$_cwd]: " PROJECT_DIR
+    PROJECT_DIR="${PROJECT_DIR:-$_cwd}"
 fi
 
 if [[ "$SCOPE" == "project" && ! -d "$PROJECT_DIR" ]]; then
@@ -107,36 +140,14 @@ fi
 case "$PLATFORM" in
     claude-code)
         if [[ "$SCOPE" == "global" ]]; then
-            TARGET="$HOME/.claude/skills/deploy-to-aks"
-            mkdir -p "$(dirname "$TARGET")"
-            if [[ -e "$TARGET" ]]; then
-                info "Existing installation found at $TARGET"
-                read -rp "Replace it? [y/N]: " confirm
-                [[ "$confirm" =~ ^[yY]$ ]] || { info "Aborted."; exit 0; }
-                rm -rf "$TARGET"
-            fi
-            ln -s "$SKILL_SOURCE" "$TARGET"
-            info "Symlinked $SKILL_SOURCE → $TARGET"
-            echo ""
-            echo "Done! Start Claude Code in any project and use:"
-            echo "  /deploy-to-aks"
-            echo "  or ask: \"help me deploy to AKS\""
+            install_skill "$HOME/.claude/skills/deploy-to-aks" "symlink"
         else
-            TARGET="$PROJECT_DIR/.claude/skills/deploy-to-aks"
-            mkdir -p "$(dirname "$TARGET")"
-            if [[ -e "$TARGET" ]]; then
-                info "Existing installation found at $TARGET"
-                read -rp "Replace it? [y/N]: " confirm
-                [[ "$confirm" =~ ^[yY]$ ]] || { info "Aborted."; exit 0; }
-                rm -rf "$TARGET"
-            fi
-            cp -r "$SKILL_SOURCE" "$TARGET"
-            info "Copied skill to $TARGET"
-            echo ""
-            echo "Done! Start Claude Code in $PROJECT_DIR and use:"
-            echo "  /deploy-to-aks"
-            echo "  or ask: \"help me deploy to AKS\""
+            install_skill "$PROJECT_DIR/.claude/skills/deploy-to-aks" "copy"
         fi
+        echo ""
+        echo "Done! Start Claude Code and use:"
+        echo "  /deploy-to-aks"
+        echo "  or ask: \"help me deploy to AKS\""
         ;;
 
     copilot)
@@ -159,20 +170,11 @@ Trigger phrases include:
 Start by reading `.github/skills/deploy-to-aks/SKILL.md`, then follow its
 instructions phase by phase. Do not skip phases or reorder them.'
 
-        # Copy skill directory
-        mkdir -p "$(dirname "$SKILL_TARGET")"
-        if [[ -e "$SKILL_TARGET" ]]; then
-            info "Existing skill directory found at $SKILL_TARGET"
-            read -rp "Replace it? [y/N]: " confirm
-            [[ "$confirm" =~ ^[yY]$ ]] || { info "Aborted."; exit 0; }
-            rm -rf "$SKILL_TARGET"
-        fi
-        cp -r "$SKILL_SOURCE" "$SKILL_TARGET"
-        info "Copied skill to $SKILL_TARGET"
+        install_skill "$SKILL_TARGET" "copy"
 
         # Create/append copilot-instructions.md
         if [[ -f "$INSTRUCTIONS_FILE" ]]; then
-            if grep -q "AKS Deployment Skill" "$INSTRUCTIONS_FILE" 2>/dev/null; then
+            if grep -q "AKS Deployment Skill" "$INSTRUCTIONS_FILE"; then
                 info "copilot-instructions.md already contains AKS deployment reference. Skipping."
             else
                 echo ""
@@ -204,35 +206,13 @@ instructions phase by phase. Do not skip phases or reorder them.'
 
     opencode)
         if [[ "$SCOPE" == "global" ]]; then
-            TARGET="$HOME/.config/opencode/skills/deploy-to-aks"
-            mkdir -p "$(dirname "$TARGET")"
-            if [[ -e "$TARGET" ]]; then
-                info "Existing installation found at $TARGET"
-                read -rp "Replace it? [y/N]: " confirm
-                [[ "$confirm" =~ ^[yY]$ ]] || { info "Aborted."; exit 0; }
-                rm -rf "$TARGET"
-            fi
-            ln -s "$SKILL_SOURCE" "$TARGET"
-            info "Symlinked $SKILL_SOURCE → $TARGET"
-            echo ""
-            echo "Done! Start OpenCode in any project and use:"
-            echo "  /deploy-to-aks"
-            echo "  or ask: \"help me deploy to AKS\""
+            install_skill "$HOME/.config/opencode/skills/deploy-to-aks" "symlink"
         else
-            TARGET="$PROJECT_DIR/.opencode/skills/deploy-to-aks"
-            mkdir -p "$(dirname "$TARGET")"
-            if [[ -e "$TARGET" ]]; then
-                info "Existing installation found at $TARGET"
-                read -rp "Replace it? [y/N]: " confirm
-                [[ "$confirm" =~ ^[yY]$ ]] || { info "Aborted."; exit 0; }
-                rm -rf "$TARGET"
-            fi
-            cp -r "$SKILL_SOURCE" "$TARGET"
-            info "Copied skill to $TARGET"
-            echo ""
-            echo "Done! Start OpenCode in $PROJECT_DIR and use:"
-            echo "  /deploy-to-aks"
-            echo "  or ask: \"help me deploy to AKS\""
+            install_skill "$PROJECT_DIR/.opencode/skills/deploy-to-aks" "copy"
         fi
+        echo ""
+        echo "Done! Start OpenCode and use:"
+        echo "  /deploy-to-aks"
+        echo "  or ask: \"help me deploy to AKS\""
         ;;
 esac

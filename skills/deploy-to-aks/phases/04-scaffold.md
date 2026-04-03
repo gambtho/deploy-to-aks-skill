@@ -1,4 +1,4 @@
-# Phase 4 — Scaffold
+# Phase 4: Scaffold
 
 ## Goal
 

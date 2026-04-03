@@ -2,8 +2,8 @@
 # Node.js Production Dockerfile
 # =============================================================================
 # Customize the following before use:
-#   - APP_NAME:    Replace in HEALTHCHECK and comments as needed
-#   - PORT:        Change EXPOSE and HEALTHCHECK port if not 3000
+#   - APP_NAME:    Replace in comments as needed
+#   - PORT:        Change EXPOSE port if not 3000
 #   - ENTRY_POINT: Change the final CMD to your main file (e.g. dist/main.js)
 #   - BUILD_CMD:   Adjust "npm run build" if your build script differs
 #
@@ -34,7 +34,7 @@ COPY . .
 RUN npm run build
 
 # Remove dev dependencies to slim down the production node_modules
-RUN npm ci --omit=dev
+RUN npm prune --omit=dev
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
@@ -58,10 +58,8 @@ USER node
 
 EXPOSE 3000
 
-# HEALTHCHECK gives Kubernetes probes a sensible default and documents the
-# health contract for operators.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD ["wget", "--quiet", "--spider", "http://localhost:3000/healthz"]
+# HEALTHCHECK is omitted — Kubernetes liveness/readiness probes handle health
+# checks in AKS. See deployment.yaml for probe configuration.
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/main.js"]
