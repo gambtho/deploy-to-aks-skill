@@ -1,14 +1,12 @@
-# deploy-to-aks-skill
+# deploy-to-aks
 
-An OpenCode skill that guides developers through deploying their applications to Azure Kubernetes Service (AKS) — no Kubernetes expertise required.
+An AI coding agent skill that guides developers through deploying their applications to Azure Kubernetes Service (AKS) — no Kubernetes expertise required.
 
-## What is this?
+Supports **Claude Code**, **GitHub Copilot**, and **OpenCode**.
 
-A conversational, phased deployment guide that runs inside [OpenCode](https://opencode.ai). It reads your actual project, detects your framework and dependencies, generates production-ready deployment artifacts, and optionally executes the deployment — all from your terminal.
+## What it does
 
-## How it works
-
-The skill walks you through 6 phases:
+A conversational, phased deployment guide that runs inside your AI coding agent. It reads your actual project, detects your framework and dependencies, generates production-ready deployment artifacts, and optionally executes the deployment — all from your terminal.
 
 | Phase | Name | What happens |
 |-------|------|-------------|
@@ -19,10 +17,126 @@ The skill walks you through 6 phases:
 | 5 | **Pipeline** | Generates GitHub Actions CI/CD workflow, optionally sets up OIDC federation |
 | 6 | **Deploy** | Executes deployment commands (with confirmation at each step), shows summary dashboard |
 
+File generation is automatic. Any CLI commands (`az`, `docker`, `kubectl`, `gh`) require your explicit confirmation before running.
+
+## Prerequisites
+
+- An Azure subscription (Owner or Contributor role)
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed and logged in (`az login`)
+- [Docker](https://docs.docker.com/get-docker/) installed
+- [GitHub CLI](https://cli.github.com/) installed (for CI/CD phase)
+- One of the supported AI coding agents:
+  - [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
+  - [GitHub Copilot](https://docs.github.com/en/copilot) (VS Code terminal or `gh copilot`)
+  - [OpenCode](https://opencode.ai)
+
+## Installation
+
+### Quick install (all platforms)
+
+```bash
+git clone https://github.com/<owner>/deploy-to-aks-skill.git
+cd deploy-to-aks-skill
+./install.sh
+```
+
+The script prompts for your platform and whether to install globally or into a specific project.
+
+---
+
+### Claude Code
+
+**Global install** (available in all your projects):
+
+```bash
+git clone https://github.com/<owner>/deploy-to-aks-skill.git
+ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.claude/skills/deploy-to-aks
+```
+
+**Project install** (available only in one project):
+
+```bash
+# From your project root:
+mkdir -p .claude/skills
+cp -r /path/to/deploy-to-aks-skill/skills/deploy-to-aks .claude/skills/deploy-to-aks
+```
+
+---
+
+### GitHub Copilot
+
+Copilot does not have a global skill system. Install into each project that needs it:
+
+```bash
+# From your project root:
+mkdir -p .github/skills
+cp -r /path/to/deploy-to-aks-skill/skills/deploy-to-aks .github/skills/deploy-to-aks
+```
+
+Then create or append to `.github/copilot-instructions.md`:
+
+```markdown
+## AKS Deployment Skill
+
+When the developer asks for help deploying to Azure Kubernetes Service (AKS),
+follow the phased deployment guide in `.github/skills/deploy-to-aks/SKILL.md`.
+
+Start by reading that file, then follow its instructions phase by phase.
+Do not skip phases or reorder them.
+```
+
+---
+
+### OpenCode
+
+**Global install** (available in all your projects):
+
+```bash
+git clone https://github.com/<owner>/deploy-to-aks-skill.git
+mkdir -p ~/.config/opencode/skills
+ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.config/opencode/skills/deploy-to-aks
+```
+
+**Project install** (available only in one project):
+
+```bash
+# From your project root:
+mkdir -p .opencode/skills
+ln -s /path/to/deploy-to-aks-skill/skills/deploy-to-aks .opencode/skills/deploy-to-aks
+```
+
+---
+
+### Verify installation
+
+Start your agent in the target project and ask:
+
+```
+What skills are available?
+```
+
+You should see `deploy-to-aks` in the list (Claude Code and OpenCode). For Copilot, the skill loads automatically from the instructions file — ask "help me deploy to AKS" to verify it activates.
+
+## Usage
+
+Navigate to the project you want to deploy and ask your agent:
+
+```
+Help me deploy this app to AKS
+```
+
+| Platform | How to invoke |
+|----------|--------------|
+| **Claude Code** | `/deploy-to-aks` or ask naturally: "help me deploy to AKS" |
+| **GitHub Copilot** | Ask naturally: "help me deploy to AKS" (no slash command) |
+| **OpenCode** | `/deploy-to-aks` or ask naturally: "help me deploy to AKS" |
+
+The skill walks you through all 6 phases interactively. You approve the architecture and cost estimate before any resources are created.
+
 ## What it generates
 
 - **Dockerfile** — multi-stage, non-root, optimized for your framework
-- **Kubernetes manifests** — Deployment, Service, Gateway/HTTPRoute, HPA, PDB, ServiceAccount
+- **Kubernetes manifests** — Deployment, Service, Gateway/HTTPRoute or Ingress, HPA, PDB, ServiceAccount
 - **Bicep modules** — AKS, ACR, Managed Identity, backing services (PostgreSQL, Redis, Key Vault, etc.)
 - **GitHub Actions workflow** — build, push, deploy with OIDC authentication
 
