@@ -14,7 +14,7 @@ Scan `.github/workflows/` for any existing workflow files.
 - **If only a build/test workflow exists** — add a new deployment workflow alongside it. Do not modify the existing build/test workflow.
 - **If no workflows exist** — create `.github/workflows/` directory and generate a fresh deploy workflow.
 
-Use Glob to find `**/.github/workflows/*.yml` and `**/.github/workflows/*.yaml`. Read any matches and summarize what they do before proceeding.
+Search for existing workflow files matching `**/.github/workflows/*.yml` and `**/.github/workflows/*.yaml`. Read any matches and summarize what they do before proceeding.
 
 ---
 

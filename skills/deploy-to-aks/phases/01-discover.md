@@ -10,7 +10,7 @@ Build a project profile without asking unnecessary questions. Auto-detect everyt
 
 ## Step 1: Scan the Project
 
-Dispatch an **explore subagent** to scan the project root. The subagent must collect all of the following categories in a single pass.
+Scan the project root thoroughly. Collect all of the following categories in a single pass.
 
 ### 1.1 Framework Detection
 
