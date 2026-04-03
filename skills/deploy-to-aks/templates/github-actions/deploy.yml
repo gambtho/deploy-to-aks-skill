@@ -6,7 +6,7 @@
 # Authentication uses OIDC federation (workload identity) — no stored passwords.
 # Required GitHub secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
 #
-# Placeholders to replace (uses __DOUBLE_UNDERSCORE__ style; K8s templates use <angle-bracket> style):
+# Placeholders to replace (uses __DOUBLE_UNDERSCORE__ style; K8s templates use angle-bracket style):
 #   __ACR_NAME__    — Azure Container Registry name (e.g. myappacr)
 #   __AKS_CLUSTER__ — AKS cluster name (e.g. myapp-aks)
 #   __RG_NAME__     — Azure resource group containing ACR and AKS
