@@ -9,7 +9,7 @@ Guide developers through deploying applications to Azure Kubernetes Service (AKS
 
 ## Checklist
 
-You MUST create a todo for each of these items and complete them in order:
+You MUST track each of these items as a checklist and complete them in order:
 
 1. **Discover** -- scan the project, detect framework/language/dependencies, ask clarifying questions
 2. **Architect** -- plan infrastructure, show architecture diagram + cost estimate, get approval
@@ -92,12 +92,4 @@ Use terminal-native question prompts (not visual cards) when the developer faces
 
 ## Housekeeping
 
-At any point during execution, if the project has a `.gitignore`, check whether agent working directories are excluded. Add entries for any that are missing:
-
-```
-# Agent working directories
-.claude/
-.superpowers/
-```
-
-These directories contain session-specific data and should never be committed to the repository.
+At any point during execution, if the project has a `.gitignore`, check whether your agent working directory is excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). If not, add it. These directories contain session-specific data and should never be committed to the repository.
