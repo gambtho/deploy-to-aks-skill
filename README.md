@@ -26,24 +26,29 @@ File generation is automatic. CLI commands (`az`, `docker`, `kubectl`, `gh`) req
 
 ## What it generates
 
+Example output for a Spring Boot app with PostgreSQL on AKS Automatic — actual files vary based on your project:
+
 ```
 your-project/
 ├── Dockerfile                  # Multi-stage, non-root, optimized
 ├── .dockerignore
 ├── k8s/
+│   ├── namespace.yaml          # App namespace
 │   ├── deployment.yaml         # Resource limits, probes, security context
 │   ├── service.yaml            # ClusterIP
-│   ├── gateway.yaml            # Gateway API (Automatic) or Ingress (Standard)
-│   ├── httproute.yaml
+│   ├── configmap.yaml          # App configuration
+│   ├── gateway.yaml            # Gateway API (Automatic) or ingress.yaml (Standard)
+│   ├── httproute.yaml          # Routing rules (Automatic only)
 │   ├── hpa.yaml                # Horizontal Pod Autoscaler
 │   ├── pdb.yaml                # Pod Disruption Budget
 │   └── serviceaccount.yaml     # Workload Identity
 ├── infra/
 │   ├── main.bicep              # Orchestrator
+│   ├── main.bicepparam         # Parameter values
 │   ├── aks.bicep               # AKS cluster
 │   ├── acr.bicep               # Container Registry
 │   ├── identity.bicep          # Managed Identity + federation
-│   └── postgres.bicep          # ...and any backing services
+│   └── postgres.bicep          # Backing services (postgres, redis, keyvault, etc.)
 └── .github/workflows/
     └── deploy.yml              # Build → push → deploy with OIDC
 ```
@@ -143,6 +148,41 @@ cp -r /path/to/deploy-to-aks-skill/skills/deploy-to-aks .opencode/skills/deploy-
 
 **Verify installation:** Start your agent in the target project and ask `What skills are available?` — you should see `deploy-to-aks` in the list. For Copilot, ask "help me deploy to AKS" to verify it activates.
 
+## Uninstalling
+
+<details>
+
+<summary>Claude Code</summary>
+
+**Global:** `rm -rf ~/.claude/skills/deploy-to-aks`
+
+**Project:** `rm -rf .claude/skills/deploy-to-aks` (from the project root)
+
+</details>
+
+<details>
+
+<summary>GitHub Copilot</summary>
+
+```bash
+# From the project root:
+rm -rf .github/skills/deploy-to-aks
+```
+
+Then remove the `## AKS Deployment Skill` block from `.github/copilot-instructions.md`.
+
+</details>
+
+<details>
+
+<summary>OpenCode</summary>
+
+**Global:** `rm -rf ~/.config/opencode/skills/deploy-to-aks`
+
+**Project:** `rm -rf .opencode/skills/deploy-to-aks` (from the project root)
+
+</details>
+
 ## Usage
 
 Navigate to the project you want to deploy and ask your agent:
@@ -153,23 +193,28 @@ Help me deploy this app to AKS
 
 | Platform | How to invoke |
 |----------|--------------|
-| **Claude Code** | `/deploy-to-aks` or ask naturally: "help me deploy to AKS" |
+| **Claude Code** | Ask naturally: "help me deploy to AKS" (skill activates automatically) |
 | **GitHub Copilot** | Ask naturally: "help me deploy to AKS" (no slash command) |
-| **OpenCode** | `/deploy-to-aks` or ask naturally: "help me deploy to AKS" |
+| **OpenCode** | Ask naturally: "help me deploy to AKS" (skill activates automatically) |
 
 The skill walks you through all 6 phases interactively. You approve the architecture and cost estimate before any resources are created.
 
 ## See it in action
 
-<!-- TODO: Add terminal recording (asciinema SVG or GIF) showing the skill deploying spring-petclinic -->
-<!-- Record with: asciinema rec docs/images/demo.cast -->
-<!-- Convert with: agg docs/images/demo.cast docs/images/demo.gif --theme monokai -->
-
 *Demo recording coming soon — a 60-second walkthrough from `Help me deploy this app to AKS` to a running application.*
 
 ## Supported frameworks
 
-Node.js (Express, Fastify, Next.js, Nest) · Python (Flask, FastAPI, Django) · Java (Spring Boot, Quarkus) · Go (Gin, Echo, Fiber) · .NET (ASP.NET) · Rust
+All listed frameworks get production-ready multi-stage Dockerfile generation and full AKS deployment support. Frameworks with a **knowledge pack** get deeper guidance — optimized Dockerfiles, health endpoint setup, database configuration, DS012 writable-path handling, and AKS-specific troubleshooting.
+
+| Language | Frameworks | Knowledge Pack |
+|----------|-----------|---------------|
+| Node.js | Express, Fastify, Next.js, NestJS | Yes |
+| Python | FastAPI, Django, Flask | Yes |
+| Java | Spring Boot, Quarkus | Spring Boot only |
+| Go | Gin, Echo, Fiber, stdlib | Yes |
+| .NET | ASP.NET Core | Yes |
+| Rust | Actix, Axum | Dockerfile template only |
 
 ## AKS flavors
 
@@ -181,10 +226,11 @@ Node.js (Express, Fastify, Next.js, Nest) · Python (Flask, FastAPI, Django) · 
 - An Azure subscription (Owner or Contributor role)
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed and logged in (`az login`)
 - [Docker](https://docs.docker.com/get-docker/) installed
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) installed (or let the skill install it via `az aks install-cli`)
 - [GitHub CLI](https://cli.github.com/) installed (for CI/CD phase)
 - One of the supported AI coding agents:
   - [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
-  - [GitHub Copilot](https://docs.github.com/en/copilot) (VS Code terminal or `gh copilot`)
+  - [GitHub Copilot](https://docs.github.com/en/copilot) (VS Code or compatible IDE with Copilot Chat)
   - [OpenCode](https://opencode.ai)
 
 ## Inspiration
