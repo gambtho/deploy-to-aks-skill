@@ -23,13 +23,16 @@ def _run_copilot(prompt: str, workdir: Path, timeout: int = 120) -> str:
     within the CI runner. Tests should run in isolated temp directories
     (the workspace fixture handles this) and CI runners are ephemeral.
     """
-    result = subprocess.run(
-        ["copilot", "-p", prompt, "--allow-all-tools"],
-        capture_output=True,
-        text=True,
-        cwd=workdir,
-        timeout=timeout,
-    )
+    try:
+        result = subprocess.run(
+            ["copilot", "-p", prompt, "--allow-all-tools"],
+            capture_output=True,
+            text=True,
+            cwd=workdir,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(f"Copilot CLI timed out after {timeout}s") from e
     if result.returncode != 0:
         raise RuntimeError(f"Copilot CLI failed (rc={result.returncode}): {result.stderr}")
     return result.stdout

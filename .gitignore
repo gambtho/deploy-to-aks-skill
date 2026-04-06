@@ -18,12 +18,18 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Editor
+# Editor / IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.classpath
+.project
+.settings/
+
+# Java / Maven
+target/
 
 # Environment
 .env

@@ -5,7 +5,6 @@ supported frameworks map to Dockerfile templates, and the project structure
 tree is accurate.
 """
 
-import re
 from pathlib import Path
 
 PLATFORMS = ["Claude Code", "GitHub Copilot", "OpenCode"]
@@ -42,20 +41,13 @@ def test_readme_phase_names_match_skill_md(repo_root: Path, skill_root: Path):
 
 
 def test_readme_frameworks_have_dockerfiles(repo_root: Path, skill_root: Path):
-    """Each framework listed in README has a corresponding Dockerfile template."""
+    """Each supported language in README has a corresponding Dockerfile template."""
     readme = (repo_root / "README.md").read_text()
-
-    # Find the supported frameworks line — contains framework names separated by ·
-    pattern = r"(?:Node\.js|Python|Java|Go|\.NET|Rust).*(?:Node\.js|Python|Java|Go|\.NET|Rust)"
-    frameworks_match = re.search(pattern, readme)
-    assert frameworks_match, "README missing supported frameworks line"
-
-    frameworks_line = frameworks_match.group(0)
     docker_dir = skill_root / "templates" / "dockerfiles"
 
     for framework, dockerfile in FRAMEWORK_TO_DOCKERFILE.items():
-        if framework in frameworks_line:
-            assert (docker_dir / dockerfile).is_file(), f"README lists {framework} but {dockerfile} doesn't exist"
+        assert framework in readme, f"README missing supported framework: {framework}"
+        assert (docker_dir / dockerfile).is_file(), f"README lists {framework} but {dockerfile} doesn't exist"
 
 
 def test_readme_output_tree_references_valid_artifacts(repo_root: Path, skill_root: Path):

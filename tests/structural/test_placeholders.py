@@ -19,9 +19,9 @@ SED_COMMAND_RE = re.compile(r"\bsed\b|\benvsubst\b|\bawk\b")
 def test_k8s_templates_use_angle_brackets(skill_root: Path):
     """K8s templates use <angle-bracket> placeholders."""
     k8s_dir = skill_root / "templates" / "k8s"
-    for template in sorted(k8s_dir.iterdir()):
-        if not template.is_file():
-            continue
+    files = [f for f in sorted(k8s_dir.iterdir()) if f.is_file()]
+    assert len(files) > 0, f"No files found in {k8s_dir}"
+    for template in files:
         content = template.read_text()
         matches = ANGLE_BRACKET_RE.findall(content)
         assert len(matches) > 0, f"{template.name} has no <angle-bracket> placeholders"
@@ -38,9 +38,9 @@ def test_github_actions_uses_double_underscore(skill_root: Path):
 def test_mermaid_templates_use_double_curly(skill_root: Path):
     """Mermaid templates use {{DOUBLE_CURLY}} placeholders."""
     mermaid_dir = skill_root / "templates" / "mermaid"
-    for template in sorted(mermaid_dir.iterdir()):
-        if not template.is_file():
-            continue
+    files = [f for f in sorted(mermaid_dir.iterdir()) if f.is_file()]
+    assert len(files) > 0, f"No files found in {mermaid_dir}"
+    for template in files:
         content = template.read_text()
         matches = DOUBLE_CURLY_RE.findall(content)
         assert len(matches) > 0, f"{template.name} has no {{{{DOUBLE_CURLY}}}} placeholders"
@@ -49,9 +49,9 @@ def test_mermaid_templates_use_double_curly(skill_root: Path):
 def test_no_mixed_placeholders_in_k8s(skill_root: Path):
     """K8s templates should not contain __DOUBLE_UNDERSCORE__ or {{CURLY}} placeholders."""
     k8s_dir = skill_root / "templates" / "k8s"
-    for template in sorted(k8s_dir.iterdir()):
-        if not template.is_file():
-            continue
+    files = [f for f in sorted(k8s_dir.iterdir()) if f.is_file()]
+    assert len(files) > 0, f"No files found in {k8s_dir}"
+    for template in files:
         content = template.read_text()
         assert not DOUBLE_UNDERSCORE_RE.search(content), (
             f"{template.name} contains __DOUBLE_UNDERSCORE__ placeholder (wrong style for K8s)"
@@ -88,9 +88,9 @@ def test_no_mixed_placeholders_in_github_actions(skill_root: Path):
 def test_no_mixed_placeholders_in_mermaid(skill_root: Path):
     """Mermaid templates should not contain __DOUBLE_UNDERSCORE__ or <angle-bracket> placeholders."""
     mermaid_dir = skill_root / "templates" / "mermaid"
-    for template in sorted(mermaid_dir.iterdir()):
-        if not template.is_file():
-            continue
+    files = [f for f in sorted(mermaid_dir.iterdir()) if f.is_file()]
+    assert len(files) > 0, f"No files found in {mermaid_dir}"
+    for template in files:
         content = template.read_text()
         assert not DOUBLE_UNDERSCORE_RE.search(content), (
             f"{template.name} contains __DOUBLE_UNDERSCORE__ placeholder (wrong style for mermaid)"

@@ -22,14 +22,11 @@ def test_dockerfile_generation(workspace, run_copilot):
     output = run_copilot(CONTAINERIZE_PROMPT, workdir=workspace)
     output_upper = output.upper()
 
-    # Must have FROM instruction
     assert "FROM" in output_upper, f"Missing FROM instruction in output:\n{output}"
 
-    # Must be multi-stage (at least 2 FROM instructions)
     from_count = output_upper.count("\nFROM ") + (1 if output_upper.lstrip().startswith("FROM ") else 0)
     assert from_count >= 2, f"Expected multi-stage build (>=2 FROM), found {from_count} in output:\n{output}"
 
-    # Must expose port 8080
     assert "8080" in output, f"Missing port 8080 in output:\n{output}"
 
     # Should have non-root user setup (USER instruction or adduser/useradd/groupadd)

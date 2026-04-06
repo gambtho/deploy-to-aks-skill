@@ -35,8 +35,13 @@ jobs:
         # run in CI. The tests themselves are designed to work with any
         # CLI that accepts: <binary> -p "<prompt>" --allow-all-tools
       - run: pip install -e ".[llm]"
-      - run: >-
-          pytest tests/llm/ -v --timeout=120 --reruns=1
-          ${{ inputs.test_filter && format('-k "{0}"', inputs.test_filter) || '' }}
+      - run: |
+          if [ -n "$TEST_FILTER" ]; then
+            pytest tests/llm/ -v --timeout=120 --reruns=1 -k "$TEST_FILTER"
+          else
+            pytest tests/llm/ -v --timeout=120 --reruns=1
+          fi
+        env:
+          TEST_FILTER: ${{ inputs.test_filter }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

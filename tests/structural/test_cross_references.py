@@ -21,16 +21,6 @@ def _extract_phase_table_paths(skill_md: str) -> list[str]:
     return paths
 
 
-def _extract_template_refs(content: str, prefix: str) -> list[str]:
-    """Extract template file references matching a prefix from markdown content."""
-    paths: list[str] = []
-    for match in re.finditer(rf"`?({re.escape(prefix)}[^`\s,)]+)`?", content):
-        path = match.group(1)
-        if "<" not in path:
-            paths.append(path)
-    return paths
-
-
 # --- Forward reference tests ---
 
 
@@ -48,10 +38,11 @@ def test_mermaid_templates_referenced_in_skill_md(skill_root: Path):
     """Every mermaid template is referenced in SKILL.md."""
     skill_md = (skill_root / "SKILL.md").read_text()
     mermaid_dir = skill_root / "templates" / "mermaid"
-    for template in sorted(mermaid_dir.iterdir()):
-        if template.is_file():
-            rel = f"templates/mermaid/{template.name}"
-            assert rel in skill_md, f"Orphan mermaid template: {template.name} not referenced in SKILL.md"
+    files = [f for f in sorted(mermaid_dir.iterdir()) if f.is_file()]
+    assert len(files) > 0, f"No files found in {mermaid_dir}"
+    for template in files:
+        rel = f"templates/mermaid/{template.name}"
+        assert rel in skill_md, f"Orphan mermaid template: {template.name} not referenced in SKILL.md"
 
 
 def test_knowledge_packs_referenced(skill_root: Path):
@@ -60,25 +51,23 @@ def test_knowledge_packs_referenced(skill_root: Path):
     discover = (skill_root / "phases" / "01-discover.md").read_text()
     combined = skill_md + discover
     kp_dir = skill_root / "knowledge-packs" / "frameworks"
-    if not kp_dir.exists():
-        return  # No knowledge packs yet
-    for pack in sorted(kp_dir.iterdir()):
-        if pack.is_file() and pack.suffix == ".md":
-            assert pack.stem in combined, (
-                f"Orphan knowledge pack: {pack.name} not referenced in SKILL.md or 01-discover.md"
-            )
+    assert kp_dir.exists(), f"Knowledge packs directory does not exist: {kp_dir}"
+    files = [f for f in sorted(kp_dir.iterdir()) if f.is_file() and f.suffix == ".md"]
+    assert len(files) > 0, f"No files found in {kp_dir}"
+    for pack in files:
+        assert pack.stem in combined, f"Orphan knowledge pack: {pack.name} not referenced in SKILL.md or 01-discover.md"
 
 
 def test_knowledge_pack_structure(skill_root: Path):
     """Each knowledge pack has a # title and at least one ## section."""
     kp_dir = skill_root / "knowledge-packs" / "frameworks"
-    if not kp_dir.exists():
-        return
-    for pack in sorted(kp_dir.iterdir()):
-        if pack.is_file() and pack.suffix == ".md":
-            content = pack.read_text()
-            assert re.search(r"^# ", content, re.MULTILINE), f"{pack.name} missing '# ' title"
-            assert re.search(r"^## ", content, re.MULTILINE), f"{pack.name} missing '## ' section heading"
+    assert kp_dir.exists(), f"Knowledge packs directory does not exist: {kp_dir}"
+    files = [f for f in sorted(kp_dir.iterdir()) if f.is_file() and f.suffix == ".md"]
+    assert len(files) > 0, f"No files found in {kp_dir}"
+    for pack in files:
+        content = pack.read_text()
+        assert re.search(r"^# ", content, re.MULTILINE), f"{pack.name} missing '# ' title"
+        assert re.search(r"^## ", content, re.MULTILINE), f"{pack.name} missing '## ' section heading"
 
 
 # --- Reverse reference (orphan detection) tests ---
@@ -91,9 +80,8 @@ def test_k8s_templates_referenced_in_phase4(skill_root: Path):
     templates = [t for t in sorted(k8s_dir.iterdir()) if t.is_file()]
     assert len(templates) > 0, "No K8s templates found"
     for template in templates:
-        if template.is_file():
-            ref = f"templates/k8s/{template.name}"
-            assert ref in phase4, f"Orphan K8s template: {template.name} not referenced in 04-scaffold.md"
+        ref = f"templates/k8s/{template.name}"
+        assert ref in phase4, f"Orphan K8s template: {template.name} not referenced in 04-scaffold.md"
 
 
 def test_bicep_templates_referenced_in_phases(skill_root: Path):
@@ -105,11 +93,10 @@ def test_bicep_templates_referenced_in_phases(skill_root: Path):
     templates = [t for t in sorted(bicep_dir.iterdir()) if t.is_file()]
     assert len(templates) > 0, "No Bicep templates found"
     for template in templates:
-        if template.is_file():
-            ref = f"templates/bicep/{template.name}"
-            assert ref in combined, (
-                f"Orphan Bicep template: {template.name} not referenced in 04-scaffold.md or 02-architect.md"
-            )
+        ref = f"templates/bicep/{template.name}"
+        assert ref in combined, (
+            f"Orphan Bicep template: {template.name} not referenced in 04-scaffold.md or 02-architect.md"
+        )
 
 
 def test_dockerfile_templates_referenced_in_phase3(skill_root: Path):
@@ -119,9 +106,8 @@ def test_dockerfile_templates_referenced_in_phase3(skill_root: Path):
     templates = [t for t in sorted(docker_dir.iterdir()) if t.is_file()]
     assert len(templates) > 0, "No Dockerfile templates found"
     for template in templates:
-        if template.is_file():
-            ref = f"templates/dockerfiles/{template.name}"
-            assert ref in phase3, f"Orphan Dockerfile template: {template.name} not referenced in 03-containerize.md"
+        ref = f"templates/dockerfiles/{template.name}"
+        assert ref in phase3, f"Orphan Dockerfile template: {template.name} not referenced in 03-containerize.md"
 
 
 def test_github_actions_templates_referenced_in_phase5(skill_root: Path):
@@ -131,6 +117,5 @@ def test_github_actions_templates_referenced_in_phase5(skill_root: Path):
     templates = [t for t in sorted(ga_dir.iterdir()) if t.is_file()]
     assert len(templates) > 0, "No GitHub Actions templates found"
     for template in templates:
-        if template.is_file():
-            ref = f"templates/github-actions/{template.name}"
-            assert ref in phase5, f"Orphan GH Actions template: {template.name} not referenced in 05-pipeline.md"
+        ref = f"templates/github-actions/{template.name}"
+        assert ref in phase5, f"Orphan GH Actions template: {template.name} not referenced in 05-pipeline.md"

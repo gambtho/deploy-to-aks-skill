@@ -86,8 +86,6 @@ def test_k8s_templates_parse_as_yaml(skill_root: Path):
     templates = [t for t in sorted(k8s_dir.iterdir()) if t.suffix == ".yaml"]
     assert len(templates) > 0, "No K8s YAML templates found"
     for template in templates:
-        if not template.suffix == ".yaml":
-            continue
         content = template.read_text()
         try:
             data = yaml.safe_load(content)
@@ -102,9 +100,10 @@ def test_k8s_templates_have_kind_and_apiversion(skill_root: Path):
     templates = [t for t in sorted(k8s_dir.iterdir()) if t.suffix == ".yaml"]
     assert len(templates) > 0, "No K8s YAML templates found"
     for template in templates:
-        if not template.suffix == ".yaml":
-            continue
-        data = yaml.safe_load(template.read_text())
+        try:
+            data = yaml.safe_load(template.read_text())
+        except yaml.YAMLError as e:
+            raise AssertionError(f"{template.name} is not valid YAML: {e}")
         assert "kind" in data, f"{template.name} missing 'kind' field"
         assert "apiVersion" in data, f"{template.name} missing 'apiVersion' field"
 
@@ -168,9 +167,9 @@ def test_all_bicep_files_exist(skill_root: Path):
 def test_bicep_files_have_declarations(skill_root: Path):
     """.bicep files contain at least one param, resource, or module declaration."""
     bicep_dir = skill_root / "templates" / "bicep"
-    for template in sorted(bicep_dir.iterdir()):
-        if template.suffix != ".bicep":
-            continue
+    files = [f for f in sorted(bicep_dir.iterdir()) if f.suffix == ".bicep"]
+    assert len(files) > 0, f"No .bicep files found in {bicep_dir}"
+    for template in files:
         content = template.read_text()
         has_param = re.search(r"^param\s", content, re.MULTILINE)
         has_resource = re.search(r"^resource\s", content, re.MULTILINE)
@@ -181,8 +180,8 @@ def test_bicep_files_have_declarations(skill_root: Path):
 def test_bicepparam_files_have_using(skill_root: Path):
     """.bicepparam files contain a 'using' declaration."""
     bicep_dir = skill_root / "templates" / "bicep"
-    for template in sorted(bicep_dir.iterdir()):
-        if template.suffix != ".bicepparam":
-            continue
+    files = [f for f in sorted(bicep_dir.iterdir()) if f.suffix == ".bicepparam"]
+    assert len(files) > 0, f"No .bicepparam files found in {bicep_dir}"
+    for template in files:
         content = template.read_text()
         assert re.search(r"^using\s", content, re.MULTILINE), f"{template.name} missing 'using' declaration"

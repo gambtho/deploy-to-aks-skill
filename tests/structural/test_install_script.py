@@ -11,13 +11,16 @@ from pathlib import Path
 
 def _run_install(args: list[str], cwd: str | Path | None = None) -> subprocess.CompletedProcess:
     """Run install.sh with given arguments."""
-    return subprocess.run(
-        ["bash", "install.sh", *args],
-        capture_output=True,
-        text=True,
-        cwd=cwd,
-        timeout=30,
-    )
+    try:
+        return subprocess.run(
+            ["bash", "install.sh", *args],
+            capture_output=True,
+            text=True,
+            cwd=cwd,
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(f"install.sh timed out after 30s with args: {args}") from e
 
 
 # --- Error path tests ---
@@ -41,22 +44,25 @@ def test_missing_skill_dir_exits_nonzero(tmp_path: Path, repo_root: Path):
     """Running from a directory without skills/ exits non-zero."""
     # Copy just the script to a temp dir (no skills/ directory)
     shutil.copy2(repo_root / "install.sh", tmp_path / "install.sh")
-    result = subprocess.run(
-        [
-            "bash",
-            "install.sh",
-            "--platform",
-            "copilot",
-            "--scope",
-            "project",
-            "--project-dir",
-            str(tmp_path / "target"),
-        ],
-        capture_output=True,
-        text=True,
-        cwd=tmp_path,
-        timeout=30,
-    )
+    try:
+        result = subprocess.run(
+            [
+                "bash",
+                "install.sh",
+                "--platform",
+                "copilot",
+                "--scope",
+                "project",
+                "--project-dir",
+                str(tmp_path / "target"),
+            ],
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError("install.sh timed out after 30s") from e
     assert result.returncode != 0
     assert "Cannot find" in result.stderr
 

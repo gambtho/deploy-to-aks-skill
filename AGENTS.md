@@ -45,9 +45,22 @@ docs/specs/                         # Design spec and implementation plan
 
 ## Testing
 
-There are no automated tests. The skill is validated by running it against real projects (e.g., `spring-petclinic`) inside any supported agent (Claude Code, GitHub Copilot, or OpenCode) and verifying the generated artifacts are correct and the phases flow properly. When making changes, mentally trace through the 6-phase flow to ensure consistency.
+Two-tier automated test suite, plus manual integration testing:
 
-### Suggested test scenarios
+- **Structural tests** (`make test`) — fast, deterministic, free. Validate internal consistency of skill files, templates, cross-references, placeholders, and install script. Run on every push/PR via `.github/workflows/test.yml`.
+- **LLM behavioral tests** (`make test-llm`) — slow, non-deterministic, costs premium requests. Feed fixture projects to the skill via Copilot CLI headless mode and assert properties of generated output. Run on manual trigger and weekly schedule via `.github/workflows/test-llm.yml`.
+- **Manual integration testing** — run the skill against real projects inside any supported agent (Claude Code, GitHub Copilot, or OpenCode) and verify the generated artifacts are correct and the phases flow properly.
+
+```bash
+pip install -e ".[dev]"   # Install all test + lint dependencies
+make test                  # Run structural tests (~10s)
+make test-llm              # Run LLM tests (requires Copilot CLI)
+make lint                  # Lint test code with ruff
+```
+
+When making changes, run `make test` locally before pushing. Also mentally trace through the 6-phase flow to ensure consistency.
+
+### Suggested manual test scenarios
 
 | Scenario | Exercises |
 |----------|-----------|
