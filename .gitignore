@@ -4,6 +4,11 @@ node_modules/
 # Build output
 dist/
 
+# Python / pytest
+__pycache__/
+*.egg-info/
+.pytest_cache/
+
 # Agent working directories
 .superpowers/
 .claude/

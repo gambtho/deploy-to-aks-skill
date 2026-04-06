@@ -51,9 +51,7 @@ def test_mermaid_templates_referenced_in_skill_md(skill_root: Path):
     for template in sorted(mermaid_dir.iterdir()):
         if template.is_file():
             rel = f"templates/mermaid/{template.name}"
-            assert rel in skill_md, (
-                f"Orphan mermaid template: {template.name} not referenced in SKILL.md"
-            )
+            assert rel in skill_md, f"Orphan mermaid template: {template.name} not referenced in SKILL.md"
 
 
 def test_knowledge_packs_referenced(skill_root: Path):
@@ -79,12 +77,8 @@ def test_knowledge_pack_structure(skill_root: Path):
     for pack in sorted(kp_dir.iterdir()):
         if pack.is_file() and pack.suffix == ".md":
             content = pack.read_text()
-            assert re.search(r"^# ", content, re.MULTILINE), (
-                f"{pack.name} missing '# ' title"
-            )
-            assert re.search(r"^## ", content, re.MULTILINE), (
-                f"{pack.name} missing '## ' section heading"
-            )
+            assert re.search(r"^# ", content, re.MULTILINE), f"{pack.name} missing '# ' title"
+            assert re.search(r"^## ", content, re.MULTILINE), f"{pack.name} missing '## ' section heading"
 
 
 # --- Reverse reference (orphan detection) tests ---
@@ -97,9 +91,7 @@ def test_k8s_templates_referenced_in_phase4(skill_root: Path):
     for template in sorted(k8s_dir.iterdir()):
         if template.is_file():
             ref = f"templates/k8s/{template.name}"
-            assert ref in phase4, (
-                f"Orphan K8s template: {template.name} not referenced in 04-scaffold.md"
-            )
+            assert ref in phase4, f"Orphan K8s template: {template.name} not referenced in 04-scaffold.md"
 
 
 def test_bicep_templates_referenced_in_phases(skill_root: Path):
@@ -123,9 +115,7 @@ def test_dockerfile_templates_referenced_in_phase3(skill_root: Path):
     for template in sorted(docker_dir.iterdir()):
         if template.is_file():
             ref = f"templates/dockerfiles/{template.name}"
-            assert ref in phase3, (
-                f"Orphan Dockerfile template: {template.name} not referenced in 03-containerize.md"
-            )
+            assert ref in phase3, f"Orphan Dockerfile template: {template.name} not referenced in 03-containerize.md"
 
 
 def test_github_actions_templates_referenced_in_phase5(skill_root: Path):
@@ -135,6 +125,4 @@ def test_github_actions_templates_referenced_in_phase5(skill_root: Path):
     for template in sorted(ga_dir.iterdir()):
         if template.is_file():
             ref = f"templates/github-actions/{template.name}"
-            assert ref in phase5, (
-                f"Orphan GH Actions template: {template.name} not referenced in 05-pipeline.md"
-            )
+            assert ref in phase5, f"Orphan GH Actions template: {template.name} not referenced in 05-pipeline.md"

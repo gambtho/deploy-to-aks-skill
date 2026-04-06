@@ -64,9 +64,7 @@ def test_dockerfiles_start_with_from(skill_root: Path):
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
-            assert stripped.upper().startswith("FROM"), (
-                f"{name}: first instruction is '{stripped}', expected FROM"
-            )
+            assert stripped.upper().startswith("FROM"), f"{name}: first instruction is '{stripped}', expected FROM"
             break
 
 
@@ -76,9 +74,7 @@ def test_dockerfiles_are_multistage(skill_root: Path):
     for name in EXPECTED_DOCKERFILES:
         content = (docker_dir / name).read_text()
         from_count = len(re.findall(r"^FROM\s", content, re.MULTILINE | re.IGNORECASE))
-        assert from_count >= 2, (
-            f"{name} has {from_count} FROM instruction(s) — expected at least 2 (multi-stage)"
-        )
+        assert from_count >= 2, f"{name} has {from_count} FROM instruction(s) — expected at least 2 (multi-stage)"
 
 
 # --- K8s YAML tests ---
@@ -136,9 +132,7 @@ def test_deploy_yml_has_build_and_deploy_job(skill_root: Path):
     """deploy.yml has a 'build-and-deploy' job."""
     deploy = skill_root / "templates" / "github-actions" / "deploy.yml"
     data = yaml.safe_load(deploy.read_text())
-    assert "build-and-deploy" in data.get("jobs", {}), (
-        "deploy.yml missing 'build-and-deploy' job"
-    )
+    assert "build-and-deploy" in data.get("jobs", {}), "deploy.yml missing 'build-and-deploy' job"
 
 
 def test_deploy_yml_references_oidc_secrets(skill_root: Path):
@@ -146,9 +140,7 @@ def test_deploy_yml_references_oidc_secrets(skill_root: Path):
     deploy = skill_root / "templates" / "github-actions" / "deploy.yml"
     content = deploy.read_text()
     for secret in EXPECTED_OIDC_SECRETS:
-        assert secret in content, (
-            f"deploy.yml missing OIDC secret reference: {secret}"
-        )
+        assert secret in content, f"deploy.yml missing OIDC secret reference: {secret}"
 
 
 def test_deploy_yml_contains_all_placeholders(skill_root: Path):
@@ -156,9 +148,7 @@ def test_deploy_yml_contains_all_placeholders(skill_root: Path):
     deploy = skill_root / "templates" / "github-actions" / "deploy.yml"
     content = deploy.read_text()
     for placeholder in EXPECTED_GA_PLACEHOLDERS:
-        assert placeholder in content, (
-            f"deploy.yml missing placeholder: {placeholder}"
-        )
+        assert placeholder in content, f"deploy.yml missing placeholder: {placeholder}"
 
 
 # --- Bicep tests ---
@@ -181,9 +171,7 @@ def test_bicep_files_have_declarations(skill_root: Path):
         has_param = re.search(r"^param\s", content, re.MULTILINE)
         has_resource = re.search(r"^resource\s", content, re.MULTILINE)
         has_module = re.search(r"^module\s", content, re.MULTILINE)
-        assert has_param or has_resource or has_module, (
-            f"{template.name} has no param, resource, or module declaration"
-        )
+        assert has_param or has_resource or has_module, f"{template.name} has no param, resource, or module declaration"
 
 
 def test_bicepparam_files_have_using(skill_root: Path):
@@ -193,6 +181,4 @@ def test_bicepparam_files_have_using(skill_root: Path):
         if template.suffix != ".bicepparam":
             continue
         content = template.read_text()
-        assert re.search(r"^using\s", content, re.MULTILINE), (
-            f"{template.name} missing 'using' declaration"
-        )
+        assert re.search(r"^using\s", content, re.MULTILINE), f"{template.name} missing 'using' declaration"

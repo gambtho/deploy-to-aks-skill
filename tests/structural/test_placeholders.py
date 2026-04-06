@@ -24,9 +24,7 @@ def test_k8s_templates_use_angle_brackets(skill_root: Path):
             continue
         content = template.read_text()
         matches = ANGLE_BRACKET_RE.findall(content)
-        assert len(matches) > 0, (
-            f"{template.name} has no <angle-bracket> placeholders"
-        )
+        assert len(matches) > 0, f"{template.name} has no <angle-bracket> placeholders"
 
 
 def test_github_actions_uses_double_underscore(skill_root: Path):
@@ -45,9 +43,7 @@ def test_mermaid_templates_use_double_curly(skill_root: Path):
             continue
         content = template.read_text()
         matches = DOUBLE_CURLY_RE.findall(content)
-        assert len(matches) > 0, (
-            f"{template.name} has no {{{{DOUBLE_CURLY}}}} placeholders"
-        )
+        assert len(matches) > 0, f"{template.name} has no {{{{DOUBLE_CURLY}}}} placeholders"
 
 
 def test_bicep_files_have_declarations(skill_root: Path):
@@ -60,9 +56,7 @@ def test_bicep_files_have_declarations(skill_root: Path):
         has_param = re.search(r"^param\s", content, re.MULTILINE)
         has_resource = re.search(r"^resource\s", content, re.MULTILINE)
         has_module = re.search(r"^module\s", content, re.MULTILINE)
-        assert has_param or has_resource or has_module, (
-            f"{template.name} has no param, resource, or module declaration"
-        )
+        assert has_param or has_resource or has_module, f"{template.name} has no param, resource, or module declaration"
 
 
 def test_bicepparam_files_have_using(skill_root: Path):
@@ -72,9 +66,7 @@ def test_bicepparam_files_have_using(skill_root: Path):
         if not template.suffix == ".bicepparam":
             continue
         content = template.read_text()
-        assert re.search(r"^using\s", content, re.MULTILINE), (
-            f"{template.name} missing 'using' declaration"
-        )
+        assert re.search(r"^using\s", content, re.MULTILINE), f"{template.name} missing 'using' declaration"
 
 
 def test_no_mixed_placeholders_in_k8s(skill_root: Path):
@@ -112,8 +104,7 @@ def test_no_mixed_placeholders_in_github_actions(skill_root: Path):
             continue  # Skip lines with sed/envsubst — <image> there is expected
         angle_matches = ANGLE_BRACKET_RE.findall(line)
         assert not angle_matches, (
-            f"deploy.yml line {i} contains <angle-bracket> placeholder outside "
-            f"a sed/envsubst command: {angle_matches}"
+            f"deploy.yml line {i} contains <angle-bracket> placeholder outside a sed/envsubst command: {angle_matches}"
         )
 
 

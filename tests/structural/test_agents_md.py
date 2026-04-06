@@ -4,7 +4,6 @@ Verifies the repository structure tree, platform mentions, placeholder
 convention descriptions, and test scenario frameworks match reality.
 """
 
-import re
 from pathlib import Path
 
 PLATFORMS = ["Claude Code", "GitHub Copilot", "OpenCode"]
@@ -26,10 +25,9 @@ SCENARIO_FRAMEWORKS = {
 }
 
 
-def test_agents_md_structure_tree_matches_disk(repo_root: Path):
+def test_agents_md_structure_tree_matches_disk(repo_root: Path, skill_root: Path):
     """Key directories in AGENTS.md's structure tree exist on disk."""
     agents_md = (repo_root / "AGENTS.md").read_text()
-    skill_root = repo_root / "skills" / "deploy-to-aks"
 
     # Directories that should appear in the tree and exist on disk
     expected = {
@@ -57,23 +55,17 @@ def test_agents_md_mentions_all_platforms(repo_root: Path):
 def test_agents_md_placeholder_conventions(repo_root: Path):
     """AGENTS.md describes placeholder conventions that match actual templates."""
     agents_md = (repo_root / "AGENTS.md").read_text()
-    for convention, template_dir in PLACEHOLDER_CONVENTIONS.items():
-        assert convention.lower() in agents_md.lower(), (
-            f"AGENTS.md missing placeholder convention: {convention}"
-        )
+    for convention in PLACEHOLDER_CONVENTIONS:
+        assert convention.lower() in agents_md.lower(), f"AGENTS.md missing placeholder convention: {convention}"
 
 
-def test_agents_md_test_scenarios_have_dockerfiles(repo_root: Path):
+def test_agents_md_test_scenarios_have_dockerfiles(repo_root: Path, skill_root: Path):
     """Frameworks in test scenarios table have corresponding Dockerfile templates."""
     agents_md = (repo_root / "AGENTS.md").read_text()
-    docker_dir = repo_root / "skills" / "deploy-to-aks" / "templates" / "dockerfiles"
+    docker_dir = skill_root / "templates" / "dockerfiles"
 
     for framework, dockerfile in SCENARIO_FRAMEWORKS.items():
         # Verify framework appears in test scenarios section
-        assert framework in agents_md, (
-            f"AGENTS.md test scenarios missing framework: {framework}"
-        )
+        assert framework in agents_md, f"AGENTS.md test scenarios missing framework: {framework}"
         # Verify corresponding Dockerfile exists
-        assert (docker_dir / dockerfile).is_file(), (
-            f"AGENTS.md mentions {framework} but {dockerfile} doesn't exist"
-        )
+        assert (docker_dir / dockerfile).is_file(), f"AGENTS.md mentions {framework} but {dockerfile} doesn't exist"

@@ -27,9 +27,7 @@ def test_dockerfile_generation(workspace, run_copilot):
 
     # Must be multi-stage (at least 2 FROM instructions)
     from_count = output_upper.count("\nFROM ") + (1 if output_upper.lstrip().startswith("FROM ") else 0)
-    assert from_count >= 2, (
-        f"Expected multi-stage build (>=2 FROM), found {from_count} in output:\n{output}"
-    )
+    assert from_count >= 2, f"Expected multi-stage build (>=2 FROM), found {from_count} in output:\n{output}"
 
     # Must expose port 8080
     assert "8080" in output, f"Missing port 8080 in output:\n{output}"

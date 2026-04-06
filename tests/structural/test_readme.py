@@ -27,9 +27,7 @@ def test_readme_mentions_all_platforms(repo_root: Path):
     """README installation section mentions all three platforms."""
     readme = (repo_root / "README.md").read_text()
     for platform in PLATFORMS:
-        assert platform in readme, (
-            f"README missing platform: {platform}"
-        )
+        assert platform in readme, f"README missing platform: {platform}"
 
 
 def test_readme_phase_names_match_skill_md(repo_root: Path, skill_root: Path):
@@ -48,7 +46,8 @@ def test_readme_frameworks_have_dockerfiles(repo_root: Path, skill_root: Path):
     readme = (repo_root / "README.md").read_text()
 
     # Find the supported frameworks line — contains framework names separated by ·
-    frameworks_match = re.search(r"(?:Node\.js|Python|Java|Go|\.NET|Rust).*(?:Node\.js|Python|Java|Go|\.NET|Rust)", readme)
+    pattern = r"(?:Node\.js|Python|Java|Go|\.NET|Rust).*(?:Node\.js|Python|Java|Go|\.NET|Rust)"
+    frameworks_match = re.search(pattern, readme)
     assert frameworks_match, "README missing supported frameworks line"
 
     frameworks_line = frameworks_match.group(0)
@@ -56,9 +55,7 @@ def test_readme_frameworks_have_dockerfiles(repo_root: Path, skill_root: Path):
 
     for framework, dockerfile in FRAMEWORK_TO_DOCKERFILE.items():
         if framework in frameworks_line:
-            assert (docker_dir / dockerfile).is_file(), (
-                f"README lists {framework} but {dockerfile} doesn't exist"
-            )
+            assert (docker_dir / dockerfile).is_file(), f"README lists {framework} but {dockerfile} doesn't exist"
 
 
 def test_readme_output_tree_references_valid_artifacts(repo_root: Path, skill_root: Path):

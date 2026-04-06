@@ -35,9 +35,7 @@ def test_phase_titles_match_numbers(skill_root: Path):
         path = phases_dir / f"0{num}-{name}.md"
         content = path.read_text()
         pattern = rf"^# Phase {num}: "
-        assert re.search(pattern, content, re.MULTILINE), (
-            f"{path.name} missing '# Phase {num}: ...' title"
-        )
+        assert re.search(pattern, content, re.MULTILINE), f"{path.name} missing '# Phase {num}: ...' title"
 
 
 def test_phase_files_have_goal_section(skill_root: Path):
@@ -46,9 +44,7 @@ def test_phase_files_have_goal_section(skill_root: Path):
     for num, name in PHASES.items():
         path = phases_dir / f"0{num}-{name}.md"
         content = path.read_text()
-        assert re.search(r"^## Goal", content, re.MULTILINE), (
-            f"{path.name} missing '## Goal' section"
-        )
+        assert re.search(r"^## Goal", content, re.MULTILINE), f"{path.name} missing '## Goal' section"
 
 
 def test_phase_file_sizes_within_bounds(skill_root: Path):

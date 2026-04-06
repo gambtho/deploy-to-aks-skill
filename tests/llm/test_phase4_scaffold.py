@@ -23,14 +23,10 @@ def test_k8s_manifest_generation(workspace, run_copilot):
     output_lower = output.lower()
 
     # Must contain Deployment manifest
-    assert "kind: deployment" in output_lower, (
-        f"Missing 'kind: Deployment' in output:\n{output}"
-    )
+    assert "kind: deployment" in output_lower, f"Missing 'kind: Deployment' in output:\n{output}"
 
     # Must contain Service manifest
-    assert "kind: service" in output_lower, (
-        f"Missing 'kind: Service' in output:\n{output}"
-    )
+    assert "kind: service" in output_lower, f"Missing 'kind: Service' in output:\n{output}"
 
     # Must reference port 8080
     assert "8080" in output, f"Missing port 8080 in output:\n{output}"

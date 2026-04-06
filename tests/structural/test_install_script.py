@@ -42,8 +42,16 @@ def test_missing_skill_dir_exits_nonzero(tmp_path: Path, repo_root: Path):
     # Copy just the script to a temp dir (no skills/ directory)
     shutil.copy2(repo_root / "install.sh", tmp_path / "install.sh")
     result = subprocess.run(
-        ["bash", "install.sh", "--platform", "copilot", "--scope", "project",
-         "--project-dir", str(tmp_path / "target")],
+        [
+            "bash",
+            "install.sh",
+            "--platform",
+            "copilot",
+            "--scope",
+            "project",
+            "--project-dir",
+            str(tmp_path / "target"),
+        ],
         capture_output=True,
         text=True,
         cwd=tmp_path,
@@ -84,9 +92,7 @@ def test_copilot_project_install(tmp_path: Path, repo_root: Path):
     assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not copied"
     assert any((skill_dir / "phases").iterdir()), "phases/ is empty"
     assert any((skill_dir / "templates").iterdir()), "templates/ is empty"
-    assert (project_dir / ".github" / "copilot-instructions.md").is_file(), (
-        "copilot-instructions.md not created"
-    )
+    assert (project_dir / ".github" / "copilot-instructions.md").is_file(), "copilot-instructions.md not created"
 
 
 def test_claude_code_project_install(tmp_path: Path, repo_root: Path):
