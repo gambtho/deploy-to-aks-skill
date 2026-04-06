@@ -6,7 +6,7 @@
 # Authentication uses OIDC federation (workload identity) — no stored passwords.
 # Required GitHub secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
 #
-# Placeholders to replace (uses __DOUBLE_UNDERSCORE__ style; K8s templates use <angle-bracket> style):
+# Placeholders to replace (uses __DOUBLE_UNDERSCORE__ style; K8s templates use angle-bracket style):
 #   __ACR_NAME__    — Azure Container Registry name (e.g. myappacr)
 #   __AKS_CLUSTER__ — AKS cluster name (e.g. myapp-aks)
 #   __RG_NAME__     — Azure resource group containing ACR and AKS
@@ -95,18 +95,16 @@ jobs:
       # -----------------------------------------------------------
       # 5. Deploy to AKS
       #
-      #    Applies all Kubernetes manifests from k8s/ and updates
-      #    the deployment image tag. Using kubectl apply ensures
-      #    that manifest changes (resource limits, env vars, new
-      #    resources) are applied alongside the new image.
+      #    Substitutes the image tag in the deployment manifest,
+      #    applies all K8s resources, then waits for the rollout.
       # -----------------------------------------------------------
       - name: Deploy to AKS
+        env:
+          IMAGE: ${{ env.ACR_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
         run: |
-          kubectl apply -f k8s/ --namespace ${{ env.NAMESPACE }}
+          sed -i "s|image: <image>|image: ${IMAGE}|" k8s/deployment.yaml
 
-          kubectl set image deployment/${{ env.APP_NAME }} \
-            ${{ env.APP_NAME }}=${{ env.ACR_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }} \
-            --namespace ${{ env.NAMESPACE }}
+          kubectl apply -f k8s/ --namespace ${{ env.NAMESPACE }}
 
           kubectl rollout status deployment/${{ env.APP_NAME }} \
             --namespace ${{ env.NAMESPACE }} \

@@ -1,4 +1,4 @@
-# Phase 4 — Scaffold
+# Phase 4: Scaffold
 
 ## Goal
 
@@ -38,6 +38,7 @@ file, briefly explain what was generated and why.
 ### Generation order
 
 1. `k8s/namespace.yaml` — if the target namespace is not `default`
+   (reference: `templates/k8s/namespace.yaml`)
 2. `k8s/serviceaccount.yaml` — with Workload Identity annotation
    (reference: `templates/k8s/serviceaccount.yaml`)
 3. `k8s/deployment.yaml` — full Deployment
@@ -53,6 +54,9 @@ file, briefly explain what was generated and why.
    (reference: `templates/k8s/hpa.yaml`)
 8. `k8s/pdb.yaml` — PodDisruptionBudget
    (reference: `templates/k8s/pdb.yaml`)
+9. `k8s/configmap.yaml` — ConfigMap for non-secret configuration (if the app requires
+   environment-specific config values)
+   (reference: `templates/k8s/configmap.yaml`)
 
 ### Template usage
 
@@ -129,7 +133,9 @@ infra/
 ### Generation order
 
 1. `infra/main.bicep` — orchestrator that composes all modules
+   (reference: `templates/bicep/main.bicep`)
 2. `infra/main.bicepparam` — parameter file with environment-specific values
+   (reference: `templates/bicep/main.bicepparam`)
 3. `infra/modules/aks.bicep` — AKS cluster (reference: `templates/bicep/aks.bicep`)
 4. `infra/modules/acr.bicep` — Azure Container Registry
    (reference: `templates/bicep/acr.bicep`)
@@ -139,7 +145,9 @@ infra/
    includes a database) (reference: `templates/bicep/postgresql.bicep`)
 7. `infra/modules/identity.bicep` — Managed Identity + Federated Credential
    (reference: `templates/bicep/identity.bicep`)
-8. Additional modules as required by the approved architecture.
+8. `infra/modules/redis.bicep` — Azure Cache for Redis (if architecture includes caching)
+   (reference: `templates/bicep/redis.bicep`)
+9. Additional modules as required by the approved architecture.
 
 ### Module selection rule
 

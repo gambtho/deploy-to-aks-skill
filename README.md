@@ -1,55 +1,81 @@
-# deploy-to-aks
+![deploy-to-aks banner](docs/images/banner.svg)
 
-An AI coding agent skill that guides developers through deploying their applications to Azure Kubernetes Service (AKS) — no Kubernetes expertise required.
+[![Claude Code](https://img.shields.io/badge/Claude_Code-supported-22c55e?logo=anthropic&logoColor=white)](https://docs.anthropic.com/en/docs/claude-code/overview)
+[![GitHub Copilot](https://img.shields.io/badge/GitHub_Copilot-supported-22c55e?logo=github&logoColor=white)](https://docs.github.com/en/copilot)
+[![OpenCode](https://img.shields.io/badge/OpenCode-supported-22c55e)](https://opencode.ai)
 
-Supports **Claude Code**, **GitHub Copilot**, and **OpenCode**.
+A conversational AI skill that reads your project, generates production-ready deployment artifacts, and deploys to AKS — all from your terminal. No Kubernetes expertise required.
 
-## What it does
+## How it works
 
-A conversational, phased deployment guide that runs inside your AI coding agent. It reads your actual project, detects your framework and dependencies, generates production-ready deployment artifacts, and optionally executes the deployment — all from your terminal.
+```mermaid
+graph LR
+    A["🔍 Discover"] --> B["📋 Architect"] --> C["📦 Containerize"] --> D["🔧 Scaffold"] --> E["⚙️ Pipeline"] --> F["🚀 Deploy"]
+```
 
-| Phase | Name | What happens |
-|-------|------|-------------|
-| 1 | **Discover** | Scans your project, detects framework/language/dependencies, asks clarifying questions |
-| 2 | **Architect** | Plans infrastructure, shows architecture diagram + cost estimate, gets your approval |
-| 3 | **Containerize** | Generates or validates Dockerfile + .dockerignore |
-| 4 | **Scaffold** | Generates K8s manifests + Bicep IaC, validates against AKS Deployment Safeguards |
-| 5 | **Pipeline** | Generates GitHub Actions CI/CD workflow, optionally sets up OIDC federation |
-| 6 | **Deploy** | Executes deployment commands (with confirmation at each step), shows summary dashboard |
+| | Phase | What happens |
+|---|---|---|
+| 🔍 | **Discover** | Scans your project, detects framework and dependencies |
+| 📋 | **Architect** | Plans infrastructure, shows architecture diagram + cost estimate |
+| 📦 | **Containerize** | Generates production-ready Dockerfile + .dockerignore |
+| 🔧 | **Scaffold** | Generates K8s manifests + Bicep IaC, validates against safeguards |
+| ⚙️ | **Pipeline** | Creates GitHub Actions CI/CD with OIDC auth |
+| 🚀 | **Deploy** | Executes deployment with confirmation gates, shows summary dashboard |
 
-File generation is automatic. Any CLI commands (`az`, `docker`, `kubectl`, `gh`) require your explicit confirmation before running.
+File generation is automatic. CLI commands (`az`, `docker`, `kubectl`, `gh`) require your explicit confirmation before running.
 
-## Prerequisites
+## What it generates
 
-- An Azure subscription (Owner or Contributor role)
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed and logged in (`az login`)
-- [Docker](https://docs.docker.com/get-docker/) installed
-- [GitHub CLI](https://cli.github.com/) installed (for CI/CD phase)
-- One of the supported AI coding agents:
-  - [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
-  - [GitHub Copilot](https://docs.github.com/en/copilot) (VS Code terminal or `gh copilot`)
-  - [OpenCode](https://opencode.ai)
+Example output for a Spring Boot app with PostgreSQL on AKS Automatic — actual files vary based on your project:
+
+```
+your-project/
+├── Dockerfile                  # Multi-stage, non-root, optimized
+├── .dockerignore
+├── k8s/
+│   ├── namespace.yaml          # App namespace
+│   ├── deployment.yaml         # Resource limits, probes, security context
+│   ├── service.yaml            # ClusterIP
+│   ├── configmap.yaml          # App configuration
+│   ├── gateway.yaml            # Gateway API (Automatic) or ingress.yaml (Standard)
+│   ├── httproute.yaml          # Routing rules (Automatic only)
+│   ├── hpa.yaml                # Horizontal Pod Autoscaler
+│   ├── pdb.yaml                # Pod Disruption Budget
+│   └── serviceaccount.yaml     # Workload Identity
+├── infra/
+│   ├── main.bicep              # Orchestrator
+│   ├── main.bicepparam         # Parameter values
+│   ├── aks.bicep               # AKS cluster
+│   ├── acr.bicep               # Container Registry
+│   ├── identity.bicep          # Managed Identity + federation
+│   └── postgres.bicep          # Backing services (postgres, redis, keyvault, etc.)
+└── .github/workflows/
+    └── deploy.yml              # Build → push → deploy with OIDC
+```
+
+✅ All manifests pass **AKS Deployment Safeguards** out of the box
+✅ Dockerfiles follow multi-stage, non-root, layer-cached best practices
+✅ CI/CD uses OIDC federation — no stored secrets
+✅ Adapts to your stack — detects what exists before generating
 
 ## Installation
 
-### Quick install (all platforms)
-
 ```bash
-git clone https://github.com/<your-org>/deploy-to-aks-skill.git
+git clone https://github.com/gambtho/deploy-to-aks-skill.git
 cd deploy-to-aks-skill
 ./install.sh
 ```
 
 The script prompts for your platform and whether to install globally or into a specific project.
 
----
+<details>
 
-### Claude Code
+<summary>Manual install — Claude Code</summary>
 
 **Global install** (available in all your projects):
 
 ```bash
-git clone https://github.com/<your-org>/deploy-to-aks-skill.git
+git clone https://github.com/gambtho/deploy-to-aks-skill.git
 ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.claude/skills/deploy-to-aks
 ```
 
@@ -61,9 +87,11 @@ mkdir -p .claude/skills
 cp -r /path/to/deploy-to-aks-skill/skills/deploy-to-aks .claude/skills/deploy-to-aks
 ```
 
----
+</details>
 
-### GitHub Copilot
+<details>
+
+<summary>Manual install — GitHub Copilot</summary>
 
 Copilot does not have a global skill system. Install into each project that needs it:
 
@@ -94,16 +122,18 @@ Start by reading `.github/skills/deploy-to-aks/SKILL.md`, then follow its
 instructions phase by phase. Do not skip phases or reorder them.
 ```
 
----
+</details>
 
-### OpenCode
+<details>
+
+<summary>Manual install — OpenCode</summary>
 
 **Global install** (available in all your projects):
 
 ```bash
-git clone https://github.com/<your-org>/deploy-to-aks-skill.git
+git clone https://github.com/gambtho/deploy-to-aks-skill.git
 mkdir -p ~/.config/opencode/skills
-cp -r deploy-to-aks-skill/skills/deploy-to-aks ~/.config/opencode/skills/deploy-to-aks
+ln -s "$(pwd)/deploy-to-aks-skill/skills/deploy-to-aks" ~/.config/opencode/skills/deploy-to-aks
 ```
 
 **Project install** (available only in one project):
@@ -114,17 +144,44 @@ mkdir -p .opencode/skills
 cp -r /path/to/deploy-to-aks-skill/skills/deploy-to-aks .opencode/skills/deploy-to-aks
 ```
 
----
+</details>
 
-### Verify installation
+**Verify installation:** Start your agent in the target project and ask `What skills are available?` — you should see `deploy-to-aks` in the list. For Copilot, ask "help me deploy to AKS" to verify it activates.
 
-Start your agent in the target project and ask:
+## Uninstalling
 
+<details>
+
+<summary>Claude Code</summary>
+
+**Global:** `rm -rf ~/.claude/skills/deploy-to-aks`
+
+**Project:** `rm -rf .claude/skills/deploy-to-aks` (from the project root)
+
+</details>
+
+<details>
+
+<summary>GitHub Copilot</summary>
+
+```bash
+# From the project root:
+rm -rf .github/skills/deploy-to-aks
 ```
-What skills are available?
-```
 
-You should see `deploy-to-aks` in the list (Claude Code and OpenCode). For Copilot, the skill loads automatically from the instructions file — ask "help me deploy to AKS" to verify it activates.
+Then remove the `## AKS Deployment Skill` block from `.github/copilot-instructions.md`.
+
+</details>
+
+<details>
+
+<summary>OpenCode</summary>
+
+**Global:** `rm -rf ~/.config/opencode/skills/deploy-to-aks`
+
+**Project:** `rm -rf .opencode/skills/deploy-to-aks` (from the project root)
+
+</details>
 
 ## Usage
 
@@ -136,43 +193,45 @@ Help me deploy this app to AKS
 
 | Platform | How to invoke |
 |----------|--------------|
-| **Claude Code** | `/deploy-to-aks` or ask naturally: "help me deploy to AKS" |
+| **Claude Code** | Ask naturally: "help me deploy to AKS" (skill activates automatically) |
 | **GitHub Copilot** | Ask naturally: "help me deploy to AKS" (no slash command) |
-| **OpenCode** | `/deploy-to-aks` or ask naturally: "help me deploy to AKS" |
+| **OpenCode** | Ask naturally: "help me deploy to AKS" (skill activates automatically) |
 
 The skill walks you through all 6 phases interactively. You approve the architecture and cost estimate before any resources are created.
 
-## What it generates
+## See it in action
 
-- **Dockerfile** — multi-stage, non-root, optimized for your framework
-- **Kubernetes manifests** — Deployment, Service, Gateway/HTTPRoute or Ingress, HPA, PDB, ServiceAccount
-- **Bicep modules** — AKS, ACR, Managed Identity, backing services (PostgreSQL, Redis, Key Vault, etc.)
-- **GitHub Actions workflow** — build, push, deploy with OIDC authentication
+*Demo recording coming soon — a 60-second walkthrough from `Help me deploy this app to AKS` to a running application.*
 
 ## Supported frameworks
 
-Node.js (Express, Fastify, Next.js, Nest), Python (Flask, FastAPI, Django), Java (Spring Boot, Quarkus), Go (Gin, Echo, Fiber), .NET (ASP.NET), Rust
+All listed frameworks get production-ready multi-stage Dockerfile generation and full AKS deployment support. Frameworks with a **knowledge pack** get deeper guidance — optimized Dockerfiles, health endpoint setup, database configuration, DS012 writable-path handling, and AKS-specific troubleshooting.
+
+| Language | Frameworks | Knowledge Pack |
+|----------|-----------|---------------|
+| Node.js | Express, Fastify, Next.js, NestJS | Yes |
+| Python | FastAPI, Django, Flask | Yes |
+| Java | Spring Boot, Quarkus | Spring Boot only |
+| Go | Gin, Echo, Fiber, stdlib | Yes |
+| .NET | ASP.NET Core | Yes |
+| Rust | Actix, Axum | Dockerfile template only |
 
 ## AKS flavors
 
 - **AKS Automatic** (default) — fully managed, Gateway API, Deployment Safeguards enforced
 - **AKS Standard** — more control over node pools, ingress, networking
 
-## Project structure
+## Prerequisites
 
-```
-skills/deploy-to-aks/
-  SKILL.md                          # Coordinator — entry point
-  phases/                           # Per-phase instruction files (01–06)
-  reference/                        # AKS domain knowledge docs
-  templates/                        # Dockerfile, K8s, Bicep, CI/CD, mermaid templates
-  knowledge-packs/frameworks/       # Framework-specific deployment guidance
-docs/specs/                         # Design specifications
-```
-
-## Status
-
-v1 complete. Tested against [spring-petclinic](https://github.com/spring-projects/spring-petclinic).
+- An Azure subscription (Owner or Contributor role)
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed and logged in (`az login`)
+- [Docker](https://docs.docker.com/get-docker/) installed
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) installed (or let the skill install it via `az aks install-cli`)
+- [GitHub CLI](https://cli.github.com/) installed (for CI/CD phase)
+- One of the supported AI coding agents:
+  - [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)
+  - [GitHub Copilot](https://docs.github.com/en/copilot) (VS Code or compatible IDE with Copilot Chat)
+  - [OpenCode](https://opencode.ai)
 
 ## Inspiration
 

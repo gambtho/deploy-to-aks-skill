@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="100%">
+  <title>deploy-to-aks — Deploy to Azure Kubernetes Service</title>
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0f172a"/>
@@ -17,19 +18,19 @@
     <!-- Gear: centered at (34, 10) relative to cloud group, overlapping bottom-right -->
     <g transform="translate(26, 4)">
       <!-- Gear body ring -->
-      <circle cx="10" cy="10" r="6.5" fill="none" stroke="#1e40af" stroke-width="3.5"/>
+      <circle cx="10" cy="10" r="6.5" fill="none" stroke="#2563eb" stroke-width="3.5"/>
       <!-- Center hub -->
-      <circle cx="10" cy="10" r="2.8" fill="#1e40af"/>
+      <circle cx="10" cy="10" r="2.8" fill="#2563eb"/>
       <!-- Gear teeth (8 teeth using rotated rects) -->
-      <rect x="8.2" y="-1" width="3.6" height="5" rx="1.2" fill="#1e40af"/>
-      <rect x="8.2" y="17" width="3.6" height="5" rx="1.2" fill="#1e40af"/>
-      <rect x="-1" y="8.2" width="5" height="3.6" rx="1.2" fill="#1e40af"/>
-      <rect x="17" y="8.2" width="5" height="3.6" rx="1.2" fill="#1e40af"/>
+      <rect x="8.2" y="-1" width="3.6" height="5" rx="1.2" fill="#2563eb"/>
+      <rect x="8.2" y="17" width="3.6" height="5" rx="1.2" fill="#2563eb"/>
+      <rect x="-1" y="8.2" width="5" height="3.6" rx="1.2" fill="#2563eb"/>
+      <rect x="17" y="8.2" width="5" height="3.6" rx="1.2" fill="#2563eb"/>
       <!-- Diagonal teeth -->
-      <rect x="14.5" y="1" width="3.6" height="5" rx="1.2" fill="#1e40af" transform="rotate(45 16.3 3.5)"/>
-      <rect x="1.5" y="14" width="3.6" height="5" rx="1.2" fill="#1e40af" transform="rotate(45 3.3 16.5)"/>
-      <rect x="1" y="1.5" width="5" height="3.6" rx="1.2" fill="#1e40af" transform="rotate(-45 3.5 3.3)"/>
-      <rect x="14" y="15" width="5" height="3.6" rx="1.2" fill="#1e40af" transform="rotate(-45 16.5 16.8)"/>
+      <rect x="14.5" y="1" width="3.6" height="5" rx="1.2" fill="#2563eb" transform="rotate(45 16.3 3.5)"/>
+      <rect x="1.5" y="14" width="3.6" height="5" rx="1.2" fill="#2563eb" transform="rotate(45 3.3 16.5)"/>
+      <rect x="1" y="1.5" width="5" height="3.6" rx="1.2" fill="#2563eb" transform="rotate(-45 3.5 3.3)"/>
+      <rect x="14" y="15" width="5" height="3.6" rx="1.2" fill="#2563eb" transform="rotate(-45 16.5 16.8)"/>
     </g>
   </g>
 
@@ -37,7 +38,7 @@
   <text x="600" y="158" text-anchor="middle"
         font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
         font-size="42" font-weight="700" fill="white"
-        letter-spacing="-0.5">
+        letter-spacing="-0.5px">
     deploy-to-aks
   </text>
 

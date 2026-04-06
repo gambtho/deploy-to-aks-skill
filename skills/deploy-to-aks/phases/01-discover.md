@@ -240,9 +240,20 @@ Where `<framework>` is the lowercase framework name (e.g., `spring-boot`, `djang
 **If no knowledge pack exists:** Continue with generic templates. The skill works without a knowledge pack — packs enhance the output with framework-specific best practices but are not required.
 
 Currently available knowledge packs:
-- `spring-boot` — Spring Boot (Java)
 
-Additional packs can be added to `knowledge-packs/frameworks/` as needed.
+| Pack | Framework | Trigger |
+|------|-----------|---------|
+| `spring-boot` | Spring Boot (Java) | `pom.xml` with `spring-boot-starter-web` or `build.gradle` with `org.springframework.boot` |
+| `express` | Express / Fastify (Node.js) | `package.json` with `express` or `fastify` |
+| `nextjs` | Next.js (Node.js) | `package.json` with `next` |
+| `fastapi` | FastAPI (Python) | `requirements.txt`/`pyproject.toml` with `fastapi` |
+| `django` | Django (Python) | `requirements.txt`/`pyproject.toml` with `django`, or `manage.py` present |
+| `nestjs` | NestJS (Node.js) | `package.json` with `@nestjs/core` |
+| `aspnet-core` | ASP.NET Core (.NET) | `*.csproj` with `Microsoft.NET.Sdk.Web` |
+| `go` | Go (Gin, Echo, Fiber, stdlib) | `go.mod` with `gin-gonic`, `labstack/echo`, or `gofiber` |
+| `flask` | Flask (Python) | `requirements.txt`/`pyproject.toml` with `flask` |
+
+If no pack exists for the detected framework, the skill continues with generic Dockerfile templates.
 
 ---
 

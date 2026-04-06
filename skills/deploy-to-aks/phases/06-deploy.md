@@ -210,7 +210,7 @@ ACR_NAME=$(az deployment group show \
 AKS_NAME=$(az deployment group show \
   --resource-group rg-myapp-dev \
   --name main \
-  --query properties.outputs.aksName.value \
+  --query properties.outputs.aksClusterName.value \
   --output tsv)
 
 echo "ACR: $ACR_NAME"

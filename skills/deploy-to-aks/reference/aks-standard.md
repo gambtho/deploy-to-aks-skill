@@ -199,38 +199,11 @@ properties: {
 
 ## Workload Identity
 
-Workload Identity setup is the **same** as AKS Automatic: Managed Identity -> Federated Credential -> ServiceAccount -> Pod. The difference is that it's recommended but not enforced — you could use connection strings or secrets, but you shouldn't.
+Workload Identity setup is the **same** as AKS Automatic: Managed Identity → Federated Credential → ServiceAccount → Pod. The difference is that it's recommended but not enforced — you could use connection strings or secrets, but you shouldn't.
 
-### Enable in Bicep
+Enable it by setting `oidcIssuerProfile.enabled: true` and `securityProfile.workloadIdentity.enabled: true` in the cluster Bicep (shown in the full cluster example below). ACR pull access uses the same `AcrPull` role assignment — see `templates/bicep/acr.bicep` for the template.
 
-```bicep
-oidcIssuerProfile: {
-  enabled: true
-}
-securityProfile: {
-  workloadIdentity: {
-    enabled: true
-  }
-}
-```
-
-### ACR Access
-
-Same as Automatic — assign `AcrPull` on the ACR to the cluster's kubelet identity:
-
-```bicep
-resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(acr.id, cluster.id, 'AcrPull')
-  scope: acr
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
-    principalId: cluster.properties.identityProfile.kubeletidentity.objectId
-    principalType: 'ServicePrincipal'
-  }
-}
-```
-
-**See `workload-identity.md` for full Bicep and Kubernetes manifest examples.**
+**See `workload-identity.md` for the full setup guide, Bicep examples, and Kubernetes manifest examples.**
 
 ## Scaling
 
