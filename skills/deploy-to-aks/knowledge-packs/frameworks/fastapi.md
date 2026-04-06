@@ -157,7 +157,7 @@ FastAPI does not have a built-in profile system. Database configuration is typic
 ```yaml
 env:
   - name: DATABASE_URL
-    value: "postgresql+asyncpg://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}"
+    value: "postgresql+asyncpg://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}?sslmode=require"
 ```
 
 ### ConfigMap pattern
@@ -168,9 +168,34 @@ kind: ConfigMap
 metadata:
   name: {{APP_NAME}}-config
 data:
-  DATABASE_URL: "postgresql+asyncpg://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}"
+  DATABASE_URL: "postgresql+asyncpg://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}?sslmode=require"
   UVICORN_WORKERS: "1"
 ```
+
+### Workload Identity with azure-identity
+
+With Workload Identity, you can authenticate to Azure PostgreSQL without storing passwords. Install `azure-identity`:
+
+```bash
+pip install azure-identity
+```
+
+Use `DefaultAzureCredential` to obtain an Azure AD token and pass it as the password when creating the async engine:
+
+```python
+from azure.identity import DefaultAzureCredential
+
+credential = DefaultAzureCredential()
+token = credential.get_token("https://ossrdbms-aad.database.windows.net/.default")
+
+# Pass token as password in the connection URL or via connect_args
+engine = create_async_engine(
+    DATABASE_URL,
+    connect_args={"password": token.token},
+)
+```
+
+**Note:** Azure AD tokens expire (typically after 1 hour). For long-running apps, refresh the token in a `pool_events.connect` listener or use a connection pool that supports token refresh callbacks.
 
 ---
 

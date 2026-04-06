@@ -1,6 +1,6 @@
 # Go Knowledge Pack
 
-> **Applies to:** Projects detected with `go.mod` containing `github.com/gin-gonic/gin`, `github.com/labstack/echo`, `github.com/gofiber/fiber`, or any Go project using the standard library `net/http` for HTTP serving.
+> **Applies to:** Projects detected with `go.mod` containing `github.com/gin-gonic/gin`, `github.com/labstack/echo`, `github.com/gofiber/fiber`, or any Go project using the standard library `net/http` for HTTP serving
 
 ---
 

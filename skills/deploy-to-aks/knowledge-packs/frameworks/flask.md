@@ -156,7 +156,7 @@ Flask does not have a built-in profile system. Database configuration is typical
 ```yaml
 env:
   - name: SQLALCHEMY_DATABASE_URI
-    value: "postgresql://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}"
+    value: "postgresql://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}?sslmode=require"
   - name: SECRET_KEY
     valueFrom:
       secretKeyRef:
@@ -186,9 +186,33 @@ kind: ConfigMap
 metadata:
   name: {{APP_NAME}}-config
 data:
-  FLASK_ENV: "production"
-  SQLALCHEMY_DATABASE_URI: "postgresql://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}"
+  SQLALCHEMY_DATABASE_URI: "postgresql://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}?sslmode=require"
 ```
+
+### Workload Identity with azure-identity
+
+With Workload Identity, you can authenticate to Azure PostgreSQL without storing passwords. Install `azure-identity`:
+
+```bash
+pip install azure-identity
+```
+
+Use `DefaultAzureCredential` to obtain an Azure AD token and pass it as the password when creating the SQLAlchemy engine:
+
+```python
+from azure.identity import DefaultAzureCredential
+
+credential = DefaultAzureCredential()
+token = credential.get_token("https://ossrdbms-aad.database.windows.net/.default")
+
+# Pass token as password via create_engine connect_args
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URI,
+    connect_args={"password": token.token},
+)
+```
+
+**Note:** Azure AD tokens expire (typically after 1 hour). For long-running apps, refresh the token periodically using SQLAlchemy's `pool_events.connect` listener.
 
 ---
 

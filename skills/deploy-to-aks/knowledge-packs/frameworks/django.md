@@ -159,7 +159,7 @@ Django does not have a built-in profile system like Spring Boot. Database config
 ```yaml
 env:
   - name: DATABASE_URL
-    value: "postgres://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}"
+    value: "postgres://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}?sslmode=require"
   - name: SECRET_KEY
     valueFrom:
       secretKeyRef:
@@ -178,8 +178,8 @@ metadata:
   name: {{APP_NAME}}-config
 data:
   DJANGO_SETTINGS_MODULE: "config.settings.production"
-  DJANGO_ALLOWED_HOSTS: "{{APP_NAME}}.{{DOMAIN}}"
-  DATABASE_URL: "postgres://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}"
+  DJANGO_ALLOWED_HOSTS: "{{INGRESS_HOSTNAME}}"
+  DATABASE_URL: "postgres://{{IDENTITY_NAME}}@{{PG_SERVER_NAME}}.postgres.database.azure.com:5432/{{DB_NAME}}?sslmode=require"
 ```
 
 ---

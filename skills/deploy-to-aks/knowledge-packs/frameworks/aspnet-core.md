@@ -167,7 +167,7 @@ env:
   - name: ASPNETCORE_ENVIRONMENT
     value: Production
   - name: ConnectionStrings__DefaultConnection
-    value: "Host={{PG_SERVER_NAME}}.postgres.database.azure.com;Database={{DB_NAME}};Username={{IDENTITY_NAME}};Ssl Mode=Require;Trust Server Certificate=true"
+    value: "Host={{PG_SERVER_NAME}}.postgres.database.azure.com;Database={{DB_NAME}};Username={{IDENTITY_NAME}};Ssl Mode=Require"
 ```
 
 The double-underscore (`__`) in `ConnectionStrings__DefaultConnection` maps to the `:` separator in .NET configuration — `ConnectionStrings:DefaultConnection`.
