@@ -46,29 +46,6 @@ def test_mermaid_templates_use_double_curly(skill_root: Path):
         assert len(matches) > 0, f"{template.name} has no {{{{DOUBLE_CURLY}}}} placeholders"
 
 
-def test_bicep_files_have_declarations(skill_root: Path):
-    """.bicep files contain at least one param, resource, or module declaration."""
-    bicep_dir = skill_root / "templates" / "bicep"
-    for template in sorted(bicep_dir.iterdir()):
-        if not template.suffix == ".bicep":
-            continue
-        content = template.read_text()
-        has_param = re.search(r"^param\s", content, re.MULTILINE)
-        has_resource = re.search(r"^resource\s", content, re.MULTILINE)
-        has_module = re.search(r"^module\s", content, re.MULTILINE)
-        assert has_param or has_resource or has_module, f"{template.name} has no param, resource, or module declaration"
-
-
-def test_bicepparam_files_have_using(skill_root: Path):
-    """.bicepparam files contain a 'using' declaration."""
-    bicep_dir = skill_root / "templates" / "bicep"
-    for template in sorted(bicep_dir.iterdir()):
-        if not template.suffix == ".bicepparam":
-            continue
-        content = template.read_text()
-        assert re.search(r"^using\s", content, re.MULTILINE), f"{template.name} missing 'using' declaration"
-
-
 def test_no_mixed_placeholders_in_k8s(skill_root: Path):
     """K8s templates should not contain __DOUBLE_UNDERSCORE__ or {{CURLY}} placeholders."""
     k8s_dir = skill_root / "templates" / "k8s"

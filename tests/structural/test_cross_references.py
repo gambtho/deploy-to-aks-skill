@@ -88,7 +88,9 @@ def test_k8s_templates_referenced_in_phase4(skill_root: Path):
     """Every K8s template in templates/k8s/ is referenced in phases/04-scaffold.md."""
     phase4 = (skill_root / "phases" / "04-scaffold.md").read_text()
     k8s_dir = skill_root / "templates" / "k8s"
-    for template in sorted(k8s_dir.iterdir()):
+    templates = [t for t in sorted(k8s_dir.iterdir()) if t.is_file()]
+    assert len(templates) > 0, "No K8s templates found"
+    for template in templates:
         if template.is_file():
             ref = f"templates/k8s/{template.name}"
             assert ref in phase4, f"Orphan K8s template: {template.name} not referenced in 04-scaffold.md"
@@ -100,7 +102,9 @@ def test_bicep_templates_referenced_in_phases(skill_root: Path):
     phase2 = (skill_root / "phases" / "02-architect.md").read_text()
     combined = phase4 + phase2
     bicep_dir = skill_root / "templates" / "bicep"
-    for template in sorted(bicep_dir.iterdir()):
+    templates = [t for t in sorted(bicep_dir.iterdir()) if t.is_file()]
+    assert len(templates) > 0, "No Bicep templates found"
+    for template in templates:
         if template.is_file():
             ref = f"templates/bicep/{template.name}"
             assert ref in combined, (
@@ -112,7 +116,9 @@ def test_dockerfile_templates_referenced_in_phase3(skill_root: Path):
     """Every Dockerfile template is referenced in phases/03-containerize.md."""
     phase3 = (skill_root / "phases" / "03-containerize.md").read_text()
     docker_dir = skill_root / "templates" / "dockerfiles"
-    for template in sorted(docker_dir.iterdir()):
+    templates = [t for t in sorted(docker_dir.iterdir()) if t.is_file()]
+    assert len(templates) > 0, "No Dockerfile templates found"
+    for template in templates:
         if template.is_file():
             ref = f"templates/dockerfiles/{template.name}"
             assert ref in phase3, f"Orphan Dockerfile template: {template.name} not referenced in 03-containerize.md"
@@ -122,7 +128,9 @@ def test_github_actions_templates_referenced_in_phase5(skill_root: Path):
     """Every GitHub Actions template is referenced in phases/05-pipeline.md."""
     phase5 = (skill_root / "phases" / "05-pipeline.md").read_text()
     ga_dir = skill_root / "templates" / "github-actions"
-    for template in sorted(ga_dir.iterdir()):
+    templates = [t for t in sorted(ga_dir.iterdir()) if t.is_file()]
+    assert len(templates) > 0, "No GitHub Actions templates found"
+    for template in templates:
         if template.is_file():
             ref = f"templates/github-actions/{template.name}"
             assert ref in phase5, f"Orphan GH Actions template: {template.name} not referenced in 05-pipeline.md"

@@ -83,7 +83,9 @@ def test_dockerfiles_are_multistage(skill_root: Path):
 def test_k8s_templates_parse_as_yaml(skill_root: Path):
     """K8s templates parse as valid YAML."""
     k8s_dir = skill_root / "templates" / "k8s"
-    for template in sorted(k8s_dir.iterdir()):
+    templates = [t for t in sorted(k8s_dir.iterdir()) if t.suffix == ".yaml"]
+    assert len(templates) > 0, "No K8s YAML templates found"
+    for template in templates:
         if not template.suffix == ".yaml":
             continue
         content = template.read_text()
@@ -97,7 +99,9 @@ def test_k8s_templates_parse_as_yaml(skill_root: Path):
 def test_k8s_templates_have_kind_and_apiversion(skill_root: Path):
     """Each K8s template has 'kind' and 'apiVersion' fields."""
     k8s_dir = skill_root / "templates" / "k8s"
-    for template in sorted(k8s_dir.iterdir()):
+    templates = [t for t in sorted(k8s_dir.iterdir()) if t.suffix == ".yaml"]
+    assert len(templates) > 0, "No K8s YAML templates found"
+    for template in templates:
         if not template.suffix == ".yaml":
             continue
         data = yaml.safe_load(template.read_text())

@@ -18,6 +18,10 @@ def _run_copilot(prompt: str, workdir: Path, timeout: int = 120) -> str:
     """Run Copilot CLI in headless mode and return stdout.
 
     Raises RuntimeError if the command fails or times out.
+
+    Security note: --allow-all-tools grants the CLI full filesystem access
+    within the CI runner. Tests should run in isolated temp directories
+    (the workspace fixture handles this) and CI runners are ephemeral.
     """
     result = subprocess.run(
         ["copilot", "-p", prompt, "--allow-all-tools"],
