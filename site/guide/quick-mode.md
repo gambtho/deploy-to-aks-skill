@@ -122,4 +122,4 @@ Once deployed via quick mode, you can:
 
 - [Full 6-phase workflow](/guide/phases)
 - [Setup script for test infrastructure](https://github.com/gambtho/deploy-to-aks-skill/blob/main/scripts/setup-aks-prerequisites.sh)
-- [AKS Deployment Safeguards](/guide/safeguards)
+- [AKS Deployment Safeguards](https://learn.microsoft.com/en-us/azure/aks/deployment-safeguards)

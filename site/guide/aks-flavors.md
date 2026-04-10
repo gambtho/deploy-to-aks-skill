@@ -137,7 +137,7 @@ Both flavors benefit from Safeguard validation, but enforcement differs:
 - **Automatic:** Safeguards enforced by Azure. Non-compliant manifests are rejected at deploy time.
 - **Standard:** Safeguards are optional. The skill validates and warns, but Azure doesn't block deployment.
 
-[Learn more about Deployment Safeguards →](/guide/safeguards)
+[Learn more about Deployment Safeguards →](https://learn.microsoft.com/en-us/azure/aks/deployment-safeguards)
 
 ## Choosing Your Flavor
 

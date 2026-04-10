@@ -302,4 +302,4 @@ All manifests pass AKS Deployment Safeguards:
 - ✅ **DS012** - Non-root user (UID 1000)
 - ✅ **DS013** - Capabilities dropped (ALL)
 
-[Learn more about Deployment Safeguards](/guide/safeguards)
+[Learn more about Deployment Safeguards](https://learn.microsoft.com/en-us/azure/aks/deployment-safeguards)
