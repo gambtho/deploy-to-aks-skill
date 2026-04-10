@@ -41,6 +41,38 @@ digraph deploy_flow {
 }
 ```
 
+## Quick Deploy Mode
+
+For developers who already have AKS infrastructure in place, a fast-path mode skips architecture design and infrastructure provisioning, going directly to containerization, deployment, and verification.
+
+### Detection
+
+Before starting the 6-phase flow, check for pre-existing infrastructure:
+
+1. The developer explicitly asks for quick deploy (e.g., "deploy my app to my existing cluster", "I already have AKS set up")
+2. `kubectl config current-context` returns an AKS context
+3. `az aks show` succeeds for the current context's cluster
+
+If any signal indicates existing infrastructure, offer quick deploy mode:
+
+> I detected an existing AKS cluster (<cluster-name>). Would you like to use **quick deploy** mode? It skips infrastructure setup and gets your app deployed in ~5 minutes.
+>
+> - (a) **Yes, quick deploy** — I already have AKS, ACR, and identity set up
+> - (b) **No, full setup** — walk me through the complete 6-phase flow
+
+**Mode routing is a suggestion, not a gate.** The developer can always choose either path.
+
+### Quick Phase Instructions
+
+| Phase | Read | Also load |
+|-------|------|-----------|
+| Quick 1: Scan & Plan | `phases/quick-01-scan-and-plan.md` | `knowledge-packs/frameworks/<detected>.md` (if exists) |
+| Quick 2: Execute | `phases/quick-02-execute.md` | `reference/safeguards.md`, `reference/workload-identity.md`, `templates/mermaid/summary-dashboard.md` |
+
+### To provision test infrastructure
+
+Run `scripts/setup-aks-prerequisites.sh` to create AKS Automatic + ACR + identity for testing. See `--help` for usage.
+
 ## Phase Instructions
 
 At each phase, read the corresponding instruction file for detailed guidance:
