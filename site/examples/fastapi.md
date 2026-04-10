@@ -21,10 +21,10 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 # Runtime stage
 FROM python:3.12-slim
 RUN addgroup --system app && adduser --system --group app
-USER app:app
 WORKDIR /app
 COPY --from=build /app/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+USER app:app
 COPY --chown=app:app . .
 EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1444,16 +1444,16 @@ Once deployed via quick mode, you can:
 |---------|-----------|---------------------|
 | **Time** | ~5-7 min | ~30-40 min |
 | **Prerequisites** | Existing AKS + ACR | Just Azure subscription |
-| | **Generates** | | |
+| **Generates** | | |
 | Dockerfile | ✅ | ✅ |
 | K8s manifests | ✅ | ✅ |
 | Bicep infrastructure | ❌ | ✅ |
 | GitHub Actions | ❌ | ✅ |
-| | **Provisions** | | |
+| **Provisions** | | |
 | AKS cluster | ❌ (uses existing) | ✅ |
 | ACR | ❌ (uses existing) | ✅ |
 | Backing services | ❌ | ✅ |
-| | **Approval Gates** | | |
+| **Approval Gates** | | |
 | Artifacts review | 1 (batched) | 6 (per phase) |
 | Azure resource creation | N/A | Yes |
 
