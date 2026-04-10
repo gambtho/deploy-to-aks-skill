@@ -9,7 +9,7 @@ This repository contains the **deploy-to-aks** AI coding agent skill — a phase
 ```
 skills/deploy-to-aks/
   SKILL.md                          # Coordinator — entry point the agent reads first
-  phases/                           # 6 ordered instruction files (01-discover through 06-deploy)
+  phases/                           # 6 ordered + 2 quick phase instruction files
   reference/                        # AKS domain knowledge (safeguards, cost, workload identity, AKS flavors)
   templates/
     bicep/                          # Bicep IaC module templates
@@ -18,6 +18,7 @@ skills/deploy-to-aks/
     k8s/                            # Kubernetes manifest templates
     mermaid/                        # Mermaid diagram templates for terminal rendering
   knowledge-packs/frameworks/       # Framework-specific deployment guidance (e.g., spring-boot.md)
+scripts/                            # Utility scripts (e.g., AKS prerequisites provisioning)
 docs/specs/                         # Design spec and implementation plan
 ```
 
@@ -33,6 +34,17 @@ docs/specs/                         # Design spec and implementation plan
   - GitHub Actions workflow uses `__DOUBLE_UNDERSCORE__` placeholders (e.g., `__ACR_NAME__`)
   - Mermaid diagram templates use `{{DOUBLE_CURLY}}` placeholders (e.g., `{{APP_NAME}}`)
 - **Knowledge packs** are optional, framework-specific markdown files in `knowledge-packs/frameworks/`. They augment but never replace the core phase instructions.
+
+## Quick deploy mode
+
+The skill has two modes:
+
+- **Full mode** (6 phases): For greenfield deployments where the user starts from nothing. Covers infrastructure provisioning, CI/CD setup, and extensive education.
+- **Quick mode** (2 phases): For users with pre-existing AKS infrastructure. Skips architecture design and Bicep provisioning, going directly to containerization, deployment, and verification.
+
+Quick mode uses separate phase files (`phases/quick-01-scan-and-plan.md`, `phases/quick-02-execute.md`) and shares Dockerfile templates, K8s manifest templates, knowledge packs, safeguards, and mermaid diagrams with full mode. It does NOT use Bicep templates, GitHub Actions template, cost reference, or AKS flavor references.
+
+The `scripts/setup-aks-prerequisites.sh` script provisions AKS Automatic test infrastructure for quick mode. Run `--help` for usage.
 
 ## Editing guidelines
 
@@ -69,6 +81,7 @@ When making changes, run `make test` locally before pushing. Also mentally trace
 | Python FastAPI (no backing services) on AKS Automatic | Python Dockerfile, minimal Bicep, Gateway API |
 | .NET ASP.NET Core + Key Vault on AKS Standard | .NET Dockerfile, Key Vault Bicep, Ingress, Workload Identity |
 | Go Gin (self-contained) on AKS Automatic | Go Dockerfile (distroless), minimal Bicep, Gateway API |
+| Python FastAPI on existing AKS Automatic (quick mode) | Quick mode routing, Python Dockerfile, Gateway API, zero questions, full pipeline |
 
 ## Commit style
 
