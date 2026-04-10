@@ -86,7 +86,9 @@ Extract:
 - `aks_oidc_issuer` — `oidcIssuerProfile.issuerUrl`
 - `resource_group` — the resource group name
 - `location` — the Azure region
+- `azure_rbac_enabled` — check `aadProfile.enableAzureRBAC` (true = Azure RBAC, false/null = Kubernetes RBAC)
 
+<<<<<<< HEAD
 **For AKS Standard clusters**, verify the Web App Routing addon is enabled:
 
 ```bash
@@ -108,7 +110,38 @@ If the result is not `true`, **stop immediately** with a clear error:
     ./scripts/setup-aks-prerequisites.sh --name <name> --location eastus --flavor standard
 ```
 
-### 2.2 ACR Detection
+### 2.2 Azure RBAC Check
+
+If `azure_rbac_enabled` is `true`, verify the user has namespace creation permissions:
+
+```bash
+kubectl auth can-i create namespaces
+```
+
+If this returns `no`, **stop immediately** with this error:
+
+```text
+✗ Azure RBAC blocks namespace creation
+
+  Your cluster uses Azure RBAC, and your account cannot create namespaces.
+  
+  Quick deploy mode requires namespace creation permissions.
+  
+  Solutions:
+  
+  1. Use a cluster without Azure RBAC (recommended for demos/testing):
+     ./scripts/setup-aks-prerequisites.sh --name <name>
+  
+  2. Create the namespace manually before running quick deploy:
+     Ask your admin to create namespace: <app-name>
+     Then re-run quick deploy
+  
+  3. Deploy to an existing namespace (you'll be prompted for which one)
+```
+
+If the user cannot create namespaces, offer to list existing namespaces they CAN deploy to and use one of those.
+
+### 2.3 ACR Detection
 
 ```bash
 az acr list -g <rg> -o json
@@ -116,7 +149,7 @@ az acr list -g <rg> -o json
 
 Extract `acr_name` and `acr_login_server` from the first result. If multiple ACRs exist, this is a disambiguation question (see Step 4).
 
-### 2.3 Identity Detection
+### 2.4 Identity Detection
 
 ```bash
 az identity list -g <rg> -o json
@@ -124,7 +157,7 @@ az identity list -g <rg> -o json
 
 Extract `identity_name` and `identity_client_id`. If multiple identities with federated credentials exist, this is a disambiguation question (see Step 4).
 
-### 2.4 Namespace Check
+### 2.5 Namespace Check
 
 ```bash
 kubectl get namespace -o name
