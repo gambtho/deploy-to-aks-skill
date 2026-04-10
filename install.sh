@@ -4,8 +4,21 @@ set -euo pipefail
 # deploy-to-aks skill installer
 # Installs the skill for Claude Code, GitHub Copilot, or OpenCode.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILL_SOURCE="$SCRIPT_DIR/skills/deploy-to-aks"
+# Detect if we're running from a cloned repo or piped from curl
+if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
+    # Running from local file
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SKILL_SOURCE="$SCRIPT_DIR/skills/deploy-to-aks"
+    PIPED_INSTALL=false
+else
+    # Running from pipe (curl | bash)
+    PIPED_INSTALL=true
+    TEMP_DIR="$(mktemp -d)"
+    SKILL_SOURCE="$TEMP_DIR/deploy-to-aks-skill/skills/deploy-to-aks"
+    
+    # Cleanup on exit
+    trap 'rm -rf "$TEMP_DIR"' EXIT
+fi
 
 # --- Helpers ---
 
@@ -58,6 +71,23 @@ install_skill() {
 }
 
 # --- Validation ---
+
+# If piped install, download the repository first
+if [[ "$PIPED_INSTALL" == "true" ]]; then
+    info "Downloading deploy-to-aks-skill repository..."
+    REPO_URL="https://github.com/gambtho/deploy-to-aks-skill.git"
+    
+    if command -v git &> /dev/null; then
+        git clone --depth 1 "$REPO_URL" "$TEMP_DIR/deploy-to-aks-skill" 2>&1 | grep -v "Cloning into" || true
+    else
+        die "git is required for installation. Please install git or clone the repository manually."
+    fi
+    
+    if [[ ! -f "$SKILL_SOURCE/SKILL.md" ]]; then
+        die "Failed to download skill files. Please try again or use manual installation."
+    fi
+    info "Download complete."
+fi
 
 if [[ ! -f "$SKILL_SOURCE/SKILL.md" ]]; then
     die "Cannot find skills/deploy-to-aks/SKILL.md. Run this script from the repo root."

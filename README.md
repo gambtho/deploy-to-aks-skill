@@ -60,13 +60,45 @@ your-project/
 
 ## Installation
 
+**Quick install** (recommended):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gambtho/deploy-to-aks-skill/main/install.sh | bash
+```
+
+The script prompts for your platform and whether to install globally or into a specific project.
+
+<details>
+<summary>Alternative: Clone and install</summary>
+
 ```bash
 git clone https://github.com/gambtho/deploy-to-aks-skill.git
 cd deploy-to-aks-skill
 ./install.sh
 ```
 
-The script prompts for your platform and whether to install globally or into a specific project.
+</details>
+
+<details>
+<summary>Non-interactive install with flags</summary>
+
+```bash
+# Global install for Claude Code
+curl -fsSL https://raw.githubusercontent.com/gambtho/deploy-to-aks-skill/main/install.sh | bash -s -- --platform claude-code --scope global
+
+# Project install for GitHub Copilot
+curl -fsSL https://raw.githubusercontent.com/gambtho/deploy-to-aks-skill/main/install.sh | bash -s -- --platform copilot --scope project --project-dir /path/to/your/project
+
+# Global install for OpenCode
+curl -fsSL https://raw.githubusercontent.com/gambtho/deploy-to-aks-skill/main/install.sh | bash -s -- --platform opencode --scope global
+```
+
+Available flags:
+- `--platform`: `claude-code`, `copilot`, or `opencode`
+- `--scope`: `global` or `project` (copilot only supports `project`)
+- `--project-dir`: Required when `--scope project` is used
+
+</details>
 
 <details>
 
