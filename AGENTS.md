@@ -81,7 +81,7 @@ When making changes, run `make test` locally before pushing. Also mentally trace
 | Python FastAPI (no backing services) on AKS Automatic | Python Dockerfile, minimal Bicep, Gateway API |
 | .NET ASP.NET Core + Key Vault on AKS Standard | .NET Dockerfile, Key Vault Bicep, Ingress, Workload Identity |
 | Go Gin (self-contained) on AKS Automatic | Go Dockerfile (distroless), minimal Bicep, Gateway API |
-| Python FastAPI on existing AKS Automatic (quick mode) | Quick mode routing, Python Dockerfile, Gateway API, zero questions, full pipeline |
+| Python FastAPI on existing AKS Automatic (quick mode) | Quick mode routing, Python Dockerfile, Gateway API, up to one disambiguation question, no CI/CD pipeline or infra templates (no Bicep/GitHub Actions), no cost or AKS flavor references |
 
 ## Commit style
 

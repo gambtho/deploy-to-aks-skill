@@ -59,7 +59,9 @@ def test_knowledge_packs_referenced(skill_root: Path):
     files = [f for f in sorted(kp_dir.iterdir()) if f.is_file() and f.suffix == ".md"]
     assert files, f"No files found in {kp_dir}"
     for pack in files:
-        assert pack.stem in combined, f"Orphan knowledge pack: {pack.name} not referenced in SKILL.md or 01-discover.md"
+        assert pack.stem in combined, (
+            f"Orphan knowledge pack: {pack.name} not referenced in SKILL.md, 01-discover.md, or quick-01-scan-and-plan.md"
+        )
 
 
 def test_knowledge_pack_structure(skill_root: Path):

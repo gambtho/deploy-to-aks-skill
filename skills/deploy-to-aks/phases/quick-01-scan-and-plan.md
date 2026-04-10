@@ -115,7 +115,7 @@ List existing namespaces. Default namespace for the app is the app name (derived
 
 If any Azure or kubectl command fails, **stop immediately** with a clear error:
 
-```
+```text
 ✗ Azure infrastructure detection failed
 
   Command:  az aks show -g my-rg -n my-aks
@@ -174,7 +174,7 @@ Present as multiple-choice. If there is no ambiguity, skip directly to Step 5 wi
 
 Present the deployment plan using Unicode box-drawing and tree formatting. Render inside a code block:
 
-```
+```text
 ╭──────────────────────────────────────────────────╮
 │  ⚡ Quick Deploy Plan                             │
 ╰──────────────────────────────────────────────────╯

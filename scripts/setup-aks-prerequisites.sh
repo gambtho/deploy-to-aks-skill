@@ -47,14 +47,26 @@ EOF
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --name)
+            if [[ $# -lt 2 ]]; then
+                echo "Error: --name requires a value." >&2
+                exit 1
+            fi
             NAME="$2"
             shift 2
             ;;
         --location)
+            if [[ $# -lt 2 ]]; then
+                echo "Error: --location requires a value." >&2
+                exit 1
+            fi
             LOCATION="$2"
             shift 2
             ;;
         --namespace)
+            if [[ $# -lt 2 ]]; then
+                echo "Error: --namespace requires a value." >&2
+                exit 1
+            fi
             NAMESPACE="$2"
             shift 2
             ;;
@@ -86,8 +98,20 @@ NAMESPACE="${NAMESPACE:-$NAME}"
 # Derived resource names
 RG_NAME="${NAME}-rg"
 AKS_NAME="${NAME}-aks"
-ACR_NAME="${NAME}acr"
+ACR_NAME="${NAME//[^a-z0-9]/}acr"
 IDENTITY_NAME="${NAME}-identity"
+
+# Validate ACR name (Azure requires 5-50 chars, lowercase alphanumeric only)
+if [[ ${#ACR_NAME} -lt 5 || ${#ACR_NAME} -gt 50 ]]; then
+    echo "Error: Derived ACR name '${ACR_NAME}' must be 5-50 characters (currently ${#ACR_NAME})." >&2
+    echo "Adjust --name '${NAME}' so that '${ACR_NAME}' meets this constraint." >&2
+    exit 1
+fi
+if [[ ! "$ACR_NAME" =~ ^[a-z0-9]+$ ]]; then
+    echo "Error: Derived ACR name '${ACR_NAME}' must contain only lowercase letters and digits." >&2
+    echo "Adjust --name '${NAME}' to use only lowercase alphanumeric characters." >&2
+    exit 1
+fi
 
 # ── Prerequisite Checks ──────────────────────────────────────────
 check_prerequisites() {

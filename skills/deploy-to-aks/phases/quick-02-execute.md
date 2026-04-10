@@ -19,7 +19,7 @@ Four steps executed sequentially. Each step has a progress indicator:
 
 Render the full progress header before each step, updating previous steps' indicators:
 
-```
+```text
   ✓ [1/4] Generate artifacts     12 files
   ▸ [2/4] Build & push image     az acr build...
   ◻ [3/4] Deploy to AKS
@@ -64,7 +64,7 @@ Apply knowledge pack optimizations if a pack was loaded in Quick Phase 1.
 
 Generate if missing. Universal entries:
 
-```
+```text
 .git
 .gitignore
 .github
@@ -115,7 +115,7 @@ Do NOT present a full safeguards table — the quick mode user doesn't need it. 
 
 Present a compact file summary (not full file contents):
 
-```
+```text
   ✓ [1/4] Generate artifacts     <N> files
 
     Created:
@@ -149,7 +149,7 @@ If not in a git repo, use a timestamp: `IMAGE_TAG=$(date +%Y%m%d%H%M%S)`.
 
 Replace the `<image>` placeholder in `k8s/deployment.yaml` with the full image reference:
 
-```
+```text
 <acr_login_server>/<app-name>:$IMAGE_TAG
 ```
 
@@ -167,7 +167,7 @@ Stream the build output to the developer.
 
 ### On success
 
-```
+```text
   ✓ [2/4] Build & push image     <acr>/<app>:<tag> (<size>)
 ```
 
@@ -194,7 +194,7 @@ az acr build \
 
 If the retry also fails, stop:
 
-```
+```text
   ✗ [2/4] Build & push image     FAILED (2 attempts)
 
     Last error:
@@ -234,7 +234,7 @@ kubectl rollout status deployment/<app-name> \
 
 ### On success
 
-```
+```text
   ✓ [3/4] Deploy to AKS          2/2 pods running
 ```
 
@@ -302,9 +302,23 @@ kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.i
 
 If the IP is pending (load balancer provisioning), retry every 15 seconds for up to 3 minutes:
 
+**AKS Automatic:**
+
 ```bash
 for i in {1..12}; do
     IP=$(kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}' 2>/dev/null)
+    if [[ -n "$IP" && "$IP" != "<pending>" ]]; then
+        break
+    fi
+    sleep 15
+done
+```
+
+**AKS Standard:**
+
+```bash
+for i in {1..12}; do
+    IP=$(kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' 2>/dev/null)
     if [[ -n "$IP" && "$IP" != "<pending>" ]]; then
         break
     fi
@@ -334,7 +348,7 @@ Scan for `ERROR`, `FATAL`, `Exception`, `panic` patterns. Report any findings as
 
 Render the summary dashboard using `templates/mermaid/summary-dashboard.md` as a reference, with Unicode formatting:
 
-```
+```text
 ╭──────────────────────────────────────────────────╮
 │  ✓ Deployment Complete                            │
 │                                                   │
@@ -376,7 +390,7 @@ This is a lightweight offer, not a gate. If the user doesn't respond, move on.
 The full progress display at each step boundary:
 
 **After Step 1:**
-```
+```text
   ✓ [1/4] Generate artifacts     <N> files
   ▸ [2/4] Build & push image     az acr build...
   ◻ [3/4] Deploy to AKS
@@ -384,7 +398,7 @@ The full progress display at each step boundary:
 ```
 
 **After Step 2:**
-```
+```text
   ✓ [1/4] Generate artifacts     <N> files
   ✓ [2/4] Build & push image     <acr>/<app>:<tag>
   ▸ [3/4] Deploy to AKS          kubectl apply...
@@ -392,7 +406,7 @@ The full progress display at each step boundary:
 ```
 
 **After Step 3:**
-```
+```text
   ✓ [1/4] Generate artifacts     <N> files
   ✓ [2/4] Build & push image     <acr>/<app>:<tag>
   ✓ [3/4] Deploy to AKS          2/2 pods running
@@ -400,7 +414,7 @@ The full progress display at each step boundary:
 ```
 
 **After Step 4 (final):**
-```
+```text
   ✓ [1/4] Generate artifacts     <N> files
   ✓ [2/4] Build & push image     <acr>/<app>:<tag>
   ✓ [3/4] Deploy to AKS          2/2 pods running
