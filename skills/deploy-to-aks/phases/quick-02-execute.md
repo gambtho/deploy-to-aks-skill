@@ -6,6 +6,18 @@ Generate artifacts, build the container image, deploy to AKS, and verify — in 
 
 Execute the approved deployment plan from Quick Phase 1 with structured progress output, automatic error recovery, and a polished summary dashboard. No intermediate confirmation gates — the plan approval in Phase 1 covers the entire execution.
 
+## Presentation Style
+
+Keep the developer engaged throughout:
+
+- **Use emoji strategically** for key milestones (📦 build, 🚀 deploy, ✅ verify)
+- **Stream command output** for long-running operations (don't go silent during 2-minute builds)
+- **Show real progress** with incremental updates, not just "done" at the end
+- **Provide context** for what's happening and why (1-line explanations)
+- **Celebrate successes** with visual flair in the summary dashboard
+
+The developer should feel like they're watching a professional deployment pipeline in action, not waiting in silence.
+
 ---
 
 ## Execution Model
@@ -20,11 +32,16 @@ Four steps executed sequentially. Each step has a progress indicator:
 Render the full progress header before each step, updating previous steps' indicators:
 
 ```text
-  ✓ [1/4] Generate artifacts     12 files
-  ▸ [2/4] Build & push image     az acr build...
-  ◻ [3/4] Deploy to AKS
-  ◻ [4/4] Verify & dashboard
+  ✓ [1/4] 📦 Generate artifacts     12 files
+  ▸ [2/4] 🔨 Build & push image     az acr build...
+  ◻ [3/4] 🚀 Deploy to AKS
+  ◻ [4/4] ✅ Verify & dashboard
 ```
+
+**Streaming feedback:** For steps 2-3 that take >30 seconds, stream progress updates every 15-30 seconds so the developer knows the agent is working. Examples:
+- "Building layer 3/8..."
+- "Pushing image... 45% complete"
+- "Waiting for pods to start... 1/2 ready"
 
 **Error recovery:** Each step can fail and retry independently. One retry per step. On second failure, stop with full diagnostics. Never restart from Step 1 on a later step failure.
 
@@ -131,7 +148,7 @@ Do NOT present a full safeguards table — the quick mode user doesn't need it. 
 Present a compact file summary (not full file contents):
 
 ```text
-  ✓ [1/4] Generate artifacts     <N> files
+  ✓ [1/4] 📦 Generate artifacts     <N> files
 
     Created:
     ├─ Dockerfile               <base-image> multi-stage
@@ -178,12 +195,17 @@ az acr build \
     .
 ```
 
-Stream the build output to the developer.
+**Stream the build output** to the developer. For long builds (>30 seconds), provide periodic progress updates:
+- "Sending build context to ACR..."
+- "Building layer 4/8..."
+- "Pushing image... 60% complete"
+
+This keeps the developer engaged during the 1-3 minute build process.
 
 ### On success
 
 ```text
-  ✓ [2/4] Build & push image     <acr>/<app>:<tag> (<size>)
+  ✓ [2/4] 🔨 Build & push image     <acr>/<app>:<tag> (<size>)
 ```
 
 ### On failure
@@ -222,7 +244,7 @@ If the retry also fails, stop:
 
 ## Step 3: Deploy to AKS
 
-Three sub-commands executed sequentially:
+Four sub-commands executed sequentially:
 
 ### 3a. Ensure kubectl context
 
@@ -233,13 +255,70 @@ az aks get-credentials \
     --overwrite-existing
 ```
 
-### 3b. Apply manifests
+### 3b. Verify Gateway API CRDs (AKS Automatic only)
+
+AKS Automatic should have Gateway API installed by default, but verify:
 
 ```bash
-kubectl apply -f k8s/
+kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io
 ```
 
-### 3c. Wait for rollout
+If missing, install Gateway API:
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml
+```
+
+### 3c. Apply manifests
+
+**CRITICAL:** Namespace creation must succeed before proceeding. If it fails, STOP immediately - do NOT continue with other manifests.
+
+```bash
+# Apply namespace first - this MUST succeed
+kubectl apply -f k8s/namespace.yaml
+```
+
+**Verify namespace exists:**
+
+```bash
+kubectl get namespace <namespace> -o name
+```
+
+If this verification fails, STOP. Do NOT proceed to apply other manifests.
+
+**For AKS with Azure RBAC:** If namespace creation fails with "User does not have access to the resource in Azure", provide this fix and STOP:
+
+```text
+✗ Namespace creation blocked by Azure RBAC
+
+  Your cluster uses Azure RBAC, which requires Azure-level permissions to create namespaces.
+  
+  Option 1: Grant permissions via Azure Portal (recommended):
+    1. Go to: https://portal.azure.com/#resource/<cluster-resource-id>/access
+    2. Click "Add" → "Add role assignment"
+    3. Select role: "Azure Kubernetes Service RBAC Cluster Admin"
+    4. Select your user account
+    5. Click "Save"
+  
+  Option 2: Have an admin run this command:
+    az role assignment create \
+      --assignee <your-email> \
+      --role "Azure Kubernetes Service RBAC Cluster Admin" \
+      --scope $(az aks show -g <rg> -n <cluster> --query id -o tsv)
+  
+  After permissions are granted, re-run the deployment.
+  
+  DO NOT PROCEED - namespace creation is required before deploying any resources.
+```
+
+**After namespace is verified to exist:**
+
+```bash
+# Now apply all other manifests
+kubectl apply -f k8s/ --recursive
+```
+
+### 3d. Wait for rollout
 
 ```bash
 kubectl rollout status deployment/<app-name> \
@@ -250,7 +329,7 @@ kubectl rollout status deployment/<app-name> \
 ### On success
 
 ```text
-  ✓ [3/4] Deploy to AKS          2/2 pods running
+  ✓ [3/4] 🚀 Deploy to AKS          2/2 pods running
 ```
 
 ### On failure
@@ -261,6 +340,18 @@ Diagnose the issue:
 kubectl get pods -n <namespace>
 kubectl describe pod <failing-pod> -n <namespace>
 kubectl logs <failing-pod> -n <namespace>
+```
+
+**CRITICAL:** If these commands fail because the namespace doesn't exist, it means Step 3c's namespace creation was bypassed or failed silently. This is a critical error - resources may have been created in the default namespace. STOP and instruct the user to:
+
+```bash
+# Check if resources ended up in default namespace
+kubectl get all -n default | grep <app-name>
+
+# Clean up if found
+kubectl delete all -l app=<app-name> -n default
+
+# Fix namespace permissions and retry deployment from Step 3
 ```
 
 Common diagnoses:
@@ -365,7 +456,7 @@ Render the summary dashboard using `templates/mermaid/summary-dashboard.md` as a
 
 ```text
 ╭──────────────────────────────────────────────────╮
-│  ✓ Deployment Complete                            │
+│  🎉 Deployment Complete                           │
 │                                                   │
 │  🌐  http://<external-ip>                         │
 ╰──────────────────────────────────────────────────╯
@@ -381,10 +472,10 @@ Render the summary dashboard using `templates/mermaid/summary-dashboard.md` as a
   └─ k8s/  (<N> manifests)
 
   Next Steps
-  ├─ Configure custom domain & TLS
-  ├─ Set up GitHub Actions CI/CD (run full deploy-to-aks for Phase 5)
-  ├─ Enable monitoring & alerts
-  └─ Clean up: az group delete -n <resource_group> --yes --no-wait
+  ├─ 🔒 Configure custom domain & TLS
+  ├─ 🔄 Set up GitHub Actions CI/CD (run full deploy-to-aks for Phase 5)
+  ├─ 📊 Enable monitoring & alerts
+  └─ 🧹 Clean up: az group delete -n <resource_group> --yes --no-wait
 ```
 
 Also render a mermaid architecture diagram as a code block showing the deployed topology (Users → Gateway/Ingress → Service → Deployment → backing services if any, ACR, Monitoring).
@@ -406,34 +497,34 @@ The full progress display at each step boundary:
 
 **After Step 1:**
 ```text
-  ✓ [1/4] Generate artifacts     <N> files
-  ▸ [2/4] Build & push image     az acr build...
-  ◻ [3/4] Deploy to AKS
-  ◻ [4/4] Verify & dashboard
+  ✓ [1/4] 📦 Generate artifacts     <N> files
+  ▸ [2/4] 🔨 Build & push image     az acr build...
+  ◻ [3/4] 🚀 Deploy to AKS
+  ◻ [4/4] ✅ Verify & dashboard
 ```
 
 **After Step 2:**
 ```text
-  ✓ [1/4] Generate artifacts     <N> files
-  ✓ [2/4] Build & push image     <acr>/<app>:<tag>
-  ▸ [3/4] Deploy to AKS          kubectl apply...
-  ◻ [4/4] Verify & dashboard
+  ✓ [1/4] 📦 Generate artifacts     <N> files
+  ✓ [2/4] 🔨 Build & push image     <acr>/<app>:<tag>
+  ▸ [3/4] 🚀 Deploy to AKS          kubectl apply...
+  ◻ [4/4] ✅ Verify & dashboard
 ```
 
 **After Step 3:**
 ```text
-  ✓ [1/4] Generate artifacts     <N> files
-  ✓ [2/4] Build & push image     <acr>/<app>:<tag>
-  ✓ [3/4] Deploy to AKS          2/2 pods running
-  ▸ [4/4] Verify & dashboard
+  ✓ [1/4] 📦 Generate artifacts     <N> files
+  ✓ [2/4] 🔨 Build & push image     <acr>/<app>:<tag>
+  ✓ [3/4] 🚀 Deploy to AKS          2/2 pods running
+  ▸ [4/4] ✅ Verify & dashboard
 ```
 
 **After Step 4 (final):**
 ```text
-  ✓ [1/4] Generate artifacts     <N> files
-  ✓ [2/4] Build & push image     <acr>/<app>:<tag>
-  ✓ [3/4] Deploy to AKS          2/2 pods running
-  ✓ [4/4] Verify & dashboard     ✓ all checks passed
+  ✓ [1/4] 📦 Generate artifacts     <N> files
+  ✓ [2/4] 🔨 Build & push image     <acr>/<app>:<tag>
+  ✓ [3/4] 🚀 Deploy to AKS          2/2 pods running
+  ✓ [4/4] ✅ Verify & dashboard     all checks passed
 ```
 
 ---

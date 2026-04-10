@@ -86,6 +86,7 @@ Extract:
 - `aks_oidc_issuer` — `oidcIssuerProfile.issuerUrl`
 - `resource_group` — the resource group name
 - `location` — the Azure region
+- `azure_rbac_enabled` — check `aadProfile.enableAzureRBAC` (true = Azure RBAC, false/null = Kubernetes RBAC)
 
 **For AKS Standard clusters**, verify the Web App Routing addon is enabled:
 
