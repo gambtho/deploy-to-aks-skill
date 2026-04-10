@@ -284,32 +284,7 @@ kubectl apply -f k8s/namespace.yaml
 kubectl get namespace <namespace> -o name
 ```
 
-If this verification fails, STOP. Do NOT proceed to apply other manifests.
-
-**For AKS with Azure RBAC:** If namespace creation fails with "User does not have access to the resource in Azure", provide this fix and STOP:
-
-```text
-✗ Namespace creation blocked by Azure RBAC
-
-  Your cluster uses Azure RBAC, which requires Azure-level permissions to create namespaces.
-  
-  Option 1: Grant permissions via Azure Portal (recommended):
-    1. Go to: https://portal.azure.com/#resource/<cluster-resource-id>/access
-    2. Click "Add" → "Add role assignment"
-    3. Select role: "Azure Kubernetes Service RBAC Cluster Admin"
-    4. Select your user account
-    5. Click "Save"
-  
-  Option 2: Have an admin run this command:
-    az role assignment create \
-      --assignee <your-email> \
-      --role "Azure Kubernetes Service RBAC Cluster Admin" \
-      --scope $(az aks show -g <rg> -n <cluster> --query id -o tsv)
-  
-  After permissions are granted, re-run the deployment.
-  
-  DO NOT PROCEED - namespace creation is required before deploying any resources.
-```
+If this verification fails, STOP. Do NOT proceed to apply other manifests. The namespace check in Phase 1 should have caught permission issues, but if it didn't, this is a hard stop.
 
 **After namespace is verified to exist:**
 

@@ -198,6 +198,7 @@ az acr create \
 
 # 3. AKS Cluster
 # Note: --attach-acr configures AcrPull role automatically, avoiding conditional access issues
+# Note: Do NOT enable Azure RBAC - it requires token exchanges that fail with conditional access policies
 echo "▸ Creating AKS ${FLAVOR^} cluster '$AKS_NAME' (this takes 5-10 minutes)..."
 
 if [[ "$FLAVOR" == "automatic" ]]; then
