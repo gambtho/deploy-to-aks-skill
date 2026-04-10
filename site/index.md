@@ -110,8 +110,6 @@ All manifests pass [AKS Deployment Safeguards](https://learn.microsoft.com/en-us
 
 **9 knowledge packs** provide deeper guidance for popular frameworks - optimized Dockerfiles, health endpoints, database config, and AKS-specific troubleshooting.
 
-[See all framework guides →](/guide/frameworks)
-
 ## Why deploy-to-aks?
 
 <div class="feature-cards">
