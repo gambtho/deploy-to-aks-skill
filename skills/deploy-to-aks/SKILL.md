@@ -71,7 +71,7 @@ If any signal indicates existing infrastructure, offer quick deploy mode:
 
 ### To provision test infrastructure
 
-Run `scripts/setup-aks-prerequisites.sh` to create AKS Automatic + ACR + identity for testing. See `--help` for usage.
+Run `./scripts/setup-aks-prerequisites.sh` to create AKS Automatic + ACR + identity for testing. See `--help` for usage.
 
 ## Phase Instructions
 

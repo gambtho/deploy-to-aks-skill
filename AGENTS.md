@@ -9,7 +9,7 @@ This repository contains the **deploy-to-aks** AI coding agent skill — a phase
 ```
 skills/deploy-to-aks/
   SKILL.md                          # Coordinator — entry point the agent reads first
-  phases/                           # 6 ordered + 2 quick phase instruction files
+  phases/                           # 6 full + 2 quick phase instruction files
   reference/                        # AKS domain knowledge (safeguards, cost, workload identity, AKS flavors)
   templates/
     bicep/                          # Bicep IaC module templates

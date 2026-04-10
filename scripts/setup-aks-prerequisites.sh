@@ -142,6 +142,7 @@ az group create \
     --output none
 
 # 2. AKS Automatic Cluster
+# Note: AKS Automatic must be available in the target region
 echo "▸ Creating AKS Automatic cluster '$AKS_NAME' (this takes 5-10 minutes)..."
 az aks create \
     --name "$AKS_NAME" \
@@ -188,6 +189,7 @@ az identity create \
     --output none
 
 # 6. Federated Identity Credential
+# Note: Subject must match the serviceAccount name in k8s/serviceaccount.yaml (defaults to ${NAME})
 echo "▸ Creating federated identity credential..."
 OIDC_ISSUER=$(az aks show \
     --name "$AKS_NAME" \
