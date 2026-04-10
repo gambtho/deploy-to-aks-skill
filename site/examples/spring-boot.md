@@ -71,7 +71,7 @@ spec:
         - containerPort: 8080
         env:
         - name: SPRING_DATASOURCE_URL
-          value: jdbc:postgresql://sample-app-postgres.postgres.database.azure.com:5432/appdb
+          value: jdbc:postgresql://sample-app-postgres.postgres.database.azure.com:5432/appdb?ssl=true&sslmode=require
         - name: SPRING_DATASOURCE_USERNAME
           valueFrom:
             secretKeyRef:
@@ -135,8 +135,6 @@ kind: Gateway
 metadata:
   name: sample-spring-boot-app-gateway
   namespace: sample-app
-  annotations:
-    gateway.networking.k8s.io/v1: "true"
 spec:
   gatewayClassName: azure-alb
   listeners:
@@ -193,7 +191,7 @@ module postgres 'postgres.bicep' = {
   params: {
     location: location
     serverName: '${appName}-${environment}-postgres'
-    administratorLogin: 'sqladmin'
+    administratorLogin: '<ADMIN_USERNAME>'  // Store in Azure Key Vault or GitHub secrets
     databaseName: 'appdb'
   }
 }
