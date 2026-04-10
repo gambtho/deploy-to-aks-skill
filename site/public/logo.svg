@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <title>deploy-to-aks logo</title>
+  <defs>
+    <linearGradient id="logoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0078D4"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="40" cy="40" r="38" fill="url(#logoBg)"/>
+  
+  <!-- Cloud + Gear icon (scaled and centered) -->
+  <g transform="translate(40, 28) scale(0.85)" fill="white">
+    <!-- Cloud body -->
+    <path d="M-32 8 C-32-8-20-20-4-18 C0-28 12-36 26-34 C40-32 50-22 50-10 C56-8 62 0 60 10 C58 18 50 24 42 24 L-20 24 C-28 24-34 18-32 8 Z" opacity="0.95"/>
+    <!-- Gear -->
+    <g transform="translate(26, 4)">
+      <circle cx="10" cy="10" r="6.5" fill="none" stroke="#2563eb" stroke-width="3.5"/>
+      <circle cx="10" cy="10" r="2.8" fill="#2563eb"/>
+      <rect x="8.2" y="-1" width="3.6" height="5" rx="1.2" fill="#2563eb"/>
+      <rect x="8.2" y="17" width="3.6" height="5" rx="1.2" fill="#2563eb"/>
+      <rect x="-1" y="8.2" width="5" height="3.6" rx="1.2" fill="#2563eb"/>
+      <rect x="17" y="8.2" width="5" height="3.6" rx="1.2" fill="#2563eb"/>
+      <rect x="14.5" y="1" width="3.6" height="5" rx="1.2" fill="#2563eb" transform="rotate(45 16.3 3.5)"/>
+      <rect x="1.5" y="14" width="3.6" height="5" rx="1.2" fill="#2563eb" transform="rotate(45 3.3 16.5)"/>
+      <rect x="1" y="1.5" width="5" height="3.6" rx="1.2" fill="#2563eb" transform="rotate(-45 3.5 3.3)"/>
+      <rect x="14" y="15" width="5" height="3.6" rx="1.2" fill="#2563eb" transform="rotate(-45 16.5 16.8)"/>
+    </g>
+  </g>
+</svg>
