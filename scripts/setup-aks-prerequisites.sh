@@ -187,7 +187,17 @@ az group create \
     --location "$LOCATION" \
     --output none
 
-# 2. AKS Cluster
+# 2. Azure Container Registry
+# Create ACR first so we can attach it during cluster creation
+echo "▸ Creating ACR '$ACR_NAME'..."
+az acr create \
+    --name "$ACR_NAME" \
+    --resource-group "$RG_NAME" \
+    --sku Basic \
+    --output none
+
+# 3. AKS Cluster
+# Note: --attach-acr configures AcrPull role automatically, avoiding conditional access issues
 echo "▸ Creating AKS ${FLAVOR^} cluster '$AKS_NAME' (this takes 5-10 minutes)..."
 
 if [[ "$FLAVOR" == "automatic" ]]; then
@@ -198,6 +208,7 @@ if [[ "$FLAVOR" == "automatic" ]]; then
         --sku automatic \
         --enable-oidc-issuer \
         --enable-workload-identity \
+        --attach-acr "$ACR_NAME" \
         --generate-ssh-keys \
         --output none
 else
@@ -212,37 +223,12 @@ else
         --enable-oidc-issuer \
         --enable-workload-identity \
         --enable-app-routing \
+        --attach-acr "$ACR_NAME" \
         --generate-ssh-keys \
         --output none
 fi
 
-# 3. Azure Container Registry
-echo "▸ Creating ACR '$ACR_NAME'..."
-az acr create \
-    --name "$ACR_NAME" \
-    --resource-group "$RG_NAME" \
-    --sku Basic \
-    --output none
-
-# 4. Grant AKS → ACR pull access
-echo "▸ Granting AKS pull access to ACR..."
-AKS_KUBELET_ID=$(az aks show \
-    --name "$AKS_NAME" \
-    --resource-group "$RG_NAME" \
-    --query "identityProfile.kubeletidentity.objectId" \
-    --output tsv)
-ACR_ID=$(az acr show \
-    --name "$ACR_NAME" \
-    --resource-group "$RG_NAME" \
-    --query id \
-    --output tsv)
-az role assignment create \
-    --assignee "$AKS_KUBELET_ID" \
-    --role AcrPull \
-    --scope "$ACR_ID" \
-    --output none
-
-# 5. Managed Identity
+# 4. Managed Identity
 echo "▸ Creating managed identity '$IDENTITY_NAME'..."
 az identity create \
     --name "$IDENTITY_NAME" \
@@ -250,7 +236,7 @@ az identity create \
     --location "$LOCATION" \
     --output none
 
-# 6. Federated Identity Credential
+# 5. Federated Identity Credential
 # Note: Subject must match the serviceAccount name in k8s/serviceaccount.yaml (defaults to ${NAME})
 echo "▸ Creating federated identity credential..."
 OIDC_ISSUER=$(az aks show \
@@ -267,7 +253,7 @@ az identity federated-credential create \
     --audiences "api://AzureADTokenExchange" \
     --output none
 
-# 7. Configure kubectl
+# 6. Configure kubectl
 echo "▸ Configuring kubectl context..."
 az aks get-credentials \
     --name "$AKS_NAME" \
