@@ -36,7 +36,8 @@ prompt_choice() {
         echo "  $((i + 1))) ${options[$i]}"
     done
     while true; do
-        read -rp "Choice [1-${#options[@]}]: " choice
+        # Read from /dev/tty to work when script is piped from curl
+        read -rp "Choice [1-${#options[@]}]: " choice < /dev/tty
         if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#options[@]} )); then
             return $((choice - 1))
         fi
@@ -48,7 +49,8 @@ confirm_replace() {
     local target="$1"
     if [[ -e "$target" ]]; then
         info "Existing installation found at $target"
-        read -rp "Replace it? [y/N]: " confirm
+        # Read from /dev/tty to work when script is piped from curl
+        read -rp "Replace it? [y/N]: " confirm < /dev/tty
         [[ "$confirm" =~ ^[yY]$ ]] || { info "Aborted."; exit 0; }
         rm -rf "$target"
     fi
@@ -157,7 +159,8 @@ fi
 
 if [[ "$SCOPE" == "project" && -z "$PROJECT_DIR" ]]; then
     _cwd="$(pwd)"
-    read -rp "Project directory [$_cwd]: " PROJECT_DIR
+    # Read from /dev/tty to work when script is piped from curl
+    read -rp "Project directory [$_cwd]: " PROJECT_DIR < /dev/tty
     PROJECT_DIR="${PROJECT_DIR:-$_cwd}"
 fi
 
@@ -212,7 +215,8 @@ instructions phase by phase. Do not skip phases or reorder them.'
                 echo "---"
                 echo "$INSTRUCTION_BLOCK"
                 echo "---"
-                read -rp "Proceed? [y/N]: " confirm
+                # Read from /dev/tty to work when script is piped from curl
+                read -rp "Proceed? [y/N]: " confirm < /dev/tty
                 if [[ "$confirm" =~ ^[yY]$ ]]; then
                     printf '\n%s\n' "$INSTRUCTION_BLOCK" >> "$INSTRUCTIONS_FILE"
                     info "Appended instruction block."
