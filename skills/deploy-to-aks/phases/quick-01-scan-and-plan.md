@@ -87,6 +87,27 @@ Extract:
 - `resource_group` — the resource group name
 - `location` — the Azure region
 
+**For AKS Standard clusters**, verify the Web App Routing addon is enabled:
+
+```bash
+az aks show -g <rg> -n <cluster> --query 'ingressProfile.webAppRouting.enabled' -o tsv
+```
+
+If the result is not `true`, **stop immediately** with a clear error:
+
+```text
+✗ AKS Standard cluster missing required addon
+
+  The cluster is AKS Standard but the Web App Routing addon is not enabled.
+  The generated Ingress resource requires this addon to function.
+
+  To enable it:
+    az aks approuting enable -g <rg> -n <cluster>
+
+  Or provision a new cluster with the addon:
+    ./scripts/setup-aks-prerequisites.sh --name <name> --location eastus --flavor standard
+```
+
 ### 2.2 ACR Detection
 
 ```bash
@@ -244,6 +265,7 @@ All of these must be known before proceeding to Quick Phase 2:
 | `health_endpoints` | Source code grep | If detectable |
 | `aks_cluster_name` | `az aks show` | Yes |
 | `aks_flavor` | `az aks show` (node provisioning mode) | Yes |
+| `web_app_routing_enabled` | `az aks show` (ingress profile) | Yes (for Standard only) |
 | `aks_oidc_issuer` | `az aks show` | Yes |
 | `acr_name` | `az acr list` | Yes |
 | `acr_login_server` | `az acr list` | Yes |

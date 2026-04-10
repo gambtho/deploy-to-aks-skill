@@ -3,11 +3,12 @@ set -euo pipefail
 
 # setup-aks-prerequisites.sh
 #
-# Provisions AKS Automatic infrastructure for testing and demoing
+# Provisions AKS infrastructure (Automatic or Standard) for testing and demoing
 # the deploy-to-aks quick deploy mode.
 #
 # Usage:
 #   ./scripts/setup-aks-prerequisites.sh --name myapp --location eastus
+#   ./scripts/setup-aks-prerequisites.sh --name myapp --flavor standard
 #   ./scripts/setup-aks-prerequisites.sh --name myapp --cleanup
 #   ./scripts/setup-aks-prerequisites.sh --help
 
@@ -15,6 +16,7 @@ set -euo pipefail
 NAME=""
 LOCATION="eastus"
 NAMESPACE=""
+FLAVOR="automatic"
 CLEANUP=false
 
 # ── Usage ─────────────────────────────────────────────────────────
@@ -22,20 +24,24 @@ usage() {
     cat <<'EOF'
 Usage: setup-aks-prerequisites.sh [OPTIONS]
 
-Provision AKS Automatic infrastructure for quick deploy mode.
+Provision AKS infrastructure for quick deploy mode.
 
 Required:
   --name <name>         Base name for all resources
 
 Optional:
   --location <region>   Azure region (default: eastus)
+  --flavor <type>       AKS flavor: automatic or standard (default: automatic)
   --namespace <ns>      Kubernetes namespace (default: <name>)
   --cleanup             Delete the resource group and all resources
   --help                Show this help message
 
 Examples:
-  # Provision infrastructure
+  # Provision AKS Automatic infrastructure
   ./scripts/setup-aks-prerequisites.sh --name myapp --location eastus
+
+  # Provision AKS Standard infrastructure
+  ./scripts/setup-aks-prerequisites.sh --name myapp --flavor standard
 
   # Clean up everything
   ./scripts/setup-aks-prerequisites.sh --name myapp --cleanup
@@ -60,6 +66,14 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             LOCATION="$2"
+            shift 2
+            ;;
+        --flavor)
+            if [[ $# -lt 2 ]]; then
+                echo "Error: --flavor requires a value." >&2
+                exit 1
+            fi
+            FLAVOR="$2"
             shift 2
             ;;
         --namespace)
@@ -89,6 +103,13 @@ done
 if [[ -z "$NAME" ]]; then
     echo "Error: --name is required." >&2
     echo "Run with --help for usage information." >&2
+    exit 1
+fi
+
+# Validate flavor
+FLAVOR=$(echo "$FLAVOR" | tr '[:upper:]' '[:lower:]')
+if [[ "$FLAVOR" != "automatic" && "$FLAVOR" != "standard" ]]; then
+    echo "Error: --flavor must be 'automatic' or 'standard' (got: '$FLAVOR')" >&2
     exit 1
 fi
 
@@ -152,9 +173,10 @@ fi
 check_prerequisites
 
 echo ""
-echo "Provisioning AKS Automatic prerequisites..."
+echo "Provisioning AKS ${FLAVOR^} prerequisites..."
 echo "  Name:       $NAME"
 echo "  Location:   $LOCATION"
+echo "  Flavor:     $FLAVOR"
 echo "  Namespace:  $NAMESPACE"
 echo ""
 
@@ -165,18 +187,34 @@ az group create \
     --location "$LOCATION" \
     --output none
 
-# 2. AKS Automatic Cluster
-# Note: AKS Automatic must be available in the target region
-echo "▸ Creating AKS Automatic cluster '$AKS_NAME' (this takes 5-10 minutes)..."
-az aks create \
-    --name "$AKS_NAME" \
-    --resource-group "$RG_NAME" \
-    --location "$LOCATION" \
-    --sku automatic \
-    --enable-oidc-issuer \
-    --enable-workload-identity \
-    --generate-ssh-keys \
-    --output none
+# 2. AKS Cluster
+echo "▸ Creating AKS ${FLAVOR^} cluster '$AKS_NAME' (this takes 5-10 minutes)..."
+
+if [[ "$FLAVOR" == "automatic" ]]; then
+    az aks create \
+        --name "$AKS_NAME" \
+        --resource-group "$RG_NAME" \
+        --location "$LOCATION" \
+        --sku automatic \
+        --enable-oidc-issuer \
+        --enable-workload-identity \
+        --generate-ssh-keys \
+        --output none
+else
+    # AKS Standard with web app routing addon
+    az aks create \
+        --name "$AKS_NAME" \
+        --resource-group "$RG_NAME" \
+        --location "$LOCATION" \
+        --tier standard \
+        --node-count 2 \
+        --node-vm-size Standard_D2s_v3 \
+        --enable-oidc-issuer \
+        --enable-workload-identity \
+        --enable-app-routing \
+        --generate-ssh-keys \
+        --output none
+fi
 
 # 3. Azure Container Registry
 echo "▸ Creating ACR '$ACR_NAME'..."
@@ -254,7 +292,7 @@ echo "│  ✓ Prerequisites Ready                            │"
 echo "╰──────────────────────────────────────────────────╯"
 echo ""
 echo "  Resource Group:   $RG_NAME"
-echo "  AKS Cluster:      $AKS_NAME (Automatic)"
+echo "  AKS Cluster:      $AKS_NAME (${FLAVOR^})"
 echo "  ACR:              $ACR_LOGIN_SERVER"
 echo "  Identity:         $IDENTITY_NAME (client: $IDENTITY_CLIENT_ID)"
 echo "  Namespace:        $NAMESPACE"
