@@ -357,7 +357,7 @@ if ! kubectl get nodes --request-timeout=10s >/dev/null 2>/tmp/kubectl-error.log
     if grep -q "Unauthorized\|Forbidden\|AADSTS\|authentication" /tmp/kubectl-error.log 2>/dev/null; then
         echo -e "${YELLOW}⚠${NC} kubectl authentication failed (likely Conditional Access)"
         echo ""
-        echo "Kubernetes RBAC requires additional configuration:"
+        echo "Azure RBAC requires additional configuration:"
         echo ""
         
         AKS_RESOURCE_ID=$(az aks show --name "$AKS_NAME" --resource-group "$RG_NAME" --query id -o tsv)
@@ -425,7 +425,7 @@ echo "  kubectl context:  $AKS_NAME"
 echo ""
 echo "  ⚠️  Note: If kubectl access failed above, you need to grant RBAC permissions"
 echo ""
-echo "  This cluster uses Kubernetes RBAC. If you haven't already, grant yourself"
+echo "  This cluster uses Azure RBAC. If you haven't already, grant yourself"
 echo "  cluster-admin permissions via the Azure Portal:"
 echo ""
 echo "  1. Go to: https://portal.azure.com/#@${TENANT_ID}/resource${AKS_RESOURCE_ID}/access"

@@ -29,21 +29,48 @@ Four steps executed sequentially. Each step has a progress indicator:
 - `✓` — completed successfully
 - `✗` — failed
 
-Render the full progress header before each step, updating previous steps' indicators:
+**CRITICAL:** Output the progress indicator block at the START of each step and again AFTER each step completes. This creates a dynamic, engaging experience:
 
+**Before Step 1:**
 ```text
-  ✓ [1/4] 📦 Generate artifacts     12 files
-  ▸ [2/4] 🔨 Build & push image     az acr build...
+  ▸ [1/4] 📦 Generate artifacts
+  ◻ [2/4] 🔨 Build & push image
   ◻ [3/4] 🚀 Deploy to AKS
   ◻ [4/4] ✅ Verify & dashboard
 ```
 
-**Streaming feedback:** For steps 2-3 that take >30 seconds, stream progress updates every 15-30 seconds so the developer knows the agent is working. Examples:
-- "Building layer 3/8..."
-- "Pushing image... 45% complete"
-- "Waiting for pods to start... 1/2 ready"
+**After Step 1 completes:**
+```text
+  ✓ [1/4] 📦 Generate artifacts     10 files written
+  ▸ [2/4] 🔨 Build & push image
+  ◻ [3/4] 🚀 Deploy to AKS
+  ◻ [4/4] ✅ Verify & dashboard
+```
+
+**After Step 2 completes:**
+```text
+  ✓ [1/4] 📦 Generate artifacts     10 files written
+  ✓ [2/4] 🔨 Build & push image     Image pushed to ACR
+  ▸ [3/4] 🚀 Deploy to AKS
+  ◻ [4/4] ✅ Verify & dashboard
+```
+
+And so on. Always show the full 4-line block with updated checkmarks
 
 **Error recovery:** Each step can fail and retry independently. One retry per step. On second failure, stop with full diagnostics. Never restart from Step 1 on a later step failure.
+
+### Permission Strategy (CRITICAL)
+
+To provide a smooth, interruption-free experience, request command permissions upfront using glob patterns:
+
+1. **File writes (Step 1)**: Batch all Write tool calls in a single agent turn
+2. **Bash commands (Steps 2-4)**: Request glob permissions at the start of each step:
+   - `git --version` → approves all `git *` commands
+   - `az version` → approves all `az *` commands  
+   - `kubectl version --client` → approves all `kubectl *` commands
+   - `curl --version` → approves all `curl *` commands (if needed)
+
+After these placeholder commands are approved, all subsequent commands with the same prefix execute without prompts. This reduces ~15 permission prompts to ~4.
 
 ---
 
@@ -169,6 +196,18 @@ If existing Dockerfile was validated instead of generated, show "Dockerfile (val
 
 ## Step 2: Build & Push Image
 
+### Permission Strategy
+
+Request permissions upfront for git and az commands:
+
+```bash
+# Request git permissions
+git --version
+
+# Request az permissions (if not already approved in Step 3 prep)
+az version
+```
+
 ### Get the image tag
 
 ```bash
@@ -187,15 +226,13 @@ Replace the `<image>` placeholder in `k8s/deployment.yaml` with the full image r
 
 ### Build and push
 
-```bash
-az acr build \
-    --registry <acr_name> \
-    --image <app-name>:$IMAGE_TAG \
-    --file Dockerfile \
-    .
+```text
+🔨 Building and pushing container image to ACR...
 ```
 
-**Stream the build output** to the developer. For long builds (>30 seconds), provide periodic progress updates:
+```bash
+az acr build --registry <acr_name> --image <app-name>:$IMAGE_TAG --file Dockerfile . >/dev/null 2>&1
+```
 - "Sending build context to ACR..."
 - "Building layer 4/8..."
 - "Pushing image... 60% complete"
@@ -244,44 +281,56 @@ If the retry also fails, stop:
 
 ## Step 3: Deploy to AKS
 
+### Permission Strategy
+
+**CRITICAL:** To avoid repeated bash permission prompts, request glob permissions upfront by running placeholder commands:
+
+```bash
+# Request kubectl permissions (will be approved once for all kubectl commands)
+kubectl version --client
+
+# Request az permissions (will be approved once for all az commands)
+az version
+```
+
+After these are approved, all subsequent `kubectl` and `az` commands in Steps 3-4 will execute without additional prompts.
+
 Four sub-commands executed sequentially:
 
 ### 3a. Ensure kubectl context
 
 ```bash
-az aks get-credentials \
-    -g <resource_group> \
-    -n <aks_cluster_name> \
-    --overwrite-existing
+az aks get-credentials -g <resource_group> -n <aks_cluster_name> --overwrite-existing >/dev/null 2>&1
 ```
 
 ### 3b. Verify Gateway API CRDs (AKS Automatic only)
 
-AKS Automatic should have Gateway API installed by default, but verify:
-
 ```bash
-kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io
+kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io >/dev/null 2>&1
 ```
 
 If missing, install Gateway API:
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml >/dev/null 2>&1
 ```
 
 ### 3c. Apply manifests
 
+```text
+🚀 Deploying to AKS cluster...
+```
+
 **CRITICAL:** Namespace creation must succeed before proceeding. If it fails, STOP immediately - do NOT continue with other manifests.
 
 ```bash
-# Apply namespace first - this MUST succeed
-kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/namespace.yaml >/dev/null 2>&1
 ```
 
 **Verify namespace exists:**
 
 ```bash
-kubectl get namespace <namespace> -o name
+kubectl get namespace <namespace> -o name >/dev/null 2>&1
 ```
 
 If this verification fails, STOP. Do NOT proceed to apply other manifests. The namespace check in Phase 1 should have caught permission issues, but if it didn't, this is a hard stop.
@@ -289,16 +338,18 @@ If this verification fails, STOP. Do NOT proceed to apply other manifests. The n
 **After namespace is verified to exist:**
 
 ```bash
-# Now apply all other manifests
-kubectl apply -f k8s/ --recursive
+kubectl apply -f k8s/ --recursive >/dev/null 2>&1
 ```
 
 ### 3d. Wait for rollout
 
 ```bash
-kubectl rollout status deployment/<app-name> \
-    -n <namespace> \
-    --timeout=300s
+kubectl rollout status deployment/<app-name> -n <namespace> --timeout=300s
+```
+
+Show a clean message while waiting:
+```text
+⏳ Waiting for pods to start (up to 5 minutes)...
 ```
 
 ### On success
@@ -349,111 +400,110 @@ If retry also fails, stop with full diagnostics.
 
 ## Step 4: Verify & Dashboard
 
-All verification is read-only. No confirmation gates needed.
+All verification is read-only. No confirmation gates needed. kubectl permissions were already approved in Step 3. If health check uses curl, request curl permission when needed.
 
 ### 4a. Pod Status
 
+Run quietly and report the summary:
 ```bash
-kubectl get pods -n <namespace> -l app=<app-name>
+kubectl get pods -n <namespace> -l app=<app-name> -o json
 ```
 
-Expect: 2 pods in `Running` state, all containers ready.
+Parse the JSON and show: `✅ 2/2 pods running` or identify issues.
 
 ### 4b. Service Status
 
+Run quietly:
 ```bash
-kubectl get svc -n <namespace>
+kubectl get svc -n <namespace> -o json
 ```
 
-Expect: ClusterIP service with correct port mapping.
+Report: `✅ Service exposed on port <port>`
 
 ### 4c. Endpoint Discovery
 
 **AKS Automatic:**
 
 ```bash
-kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}'
+IP=$(kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}' 2>/dev/null)
+```
+
+If the IP is pending, wait up to 3 minutes with a clean progress message:
+```text
+⏳ Waiting for external IP (load balancer provisioning)...
 ```
 
 **AKS Standard:**
 
 ```bash
-kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'
+IP=$(kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' 2>/dev/null)
 ```
 
-If the IP is pending (load balancer provisioning), retry every 15 seconds for up to 3 minutes:
-
-**AKS Automatic:**
-
-```bash
-for i in {1..12}; do
-    IP=$(kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}' 2>/dev/null)
-    if [[ -n "$IP" && "$IP" != "<pending>" ]]; then
-        break
-    fi
-    sleep 15
-done
-```
-
-**AKS Standard:**
-
-```bash
-for i in {1..12}; do
-    IP=$(kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}' 2>/dev/null)
-    if [[ -n "$IP" && "$IP" != "<pending>" ]]; then
-        break
-    fi
-    sleep 15
-done
-```
+Same waiting logic if pending.
 
 ### 4d. Health Check
 
 If a health endpoint was detected or `/health` is the default:
 
 ```bash
-curl -sf http://<external-ip><health-path>
+curl -sf http://<external-ip><health-path> >/dev/null 2>&1
 ```
 
-Report pass/fail. A failed health check is a warning, not a deployment failure.
+Report: `✅ Health check passed` or `⚠️ Health check failed (non-blocking)`
 
 ### 4e. Log Scan
 
 ```bash
-kubectl logs deployment/<app-name> -n <namespace> --tail=20
+kubectl logs deployment/<app-name> -n <namespace> --tail=20 2>/dev/null
 ```
 
-Scan for `ERROR`, `FATAL`, `Exception`, `panic` patterns. Report any findings as warnings.
+Scan for `ERROR`, `FATAL`, `Exception`, `panic` patterns. Report any findings as warnings. Don't show all logs to the user.
 
 ### Summary Dashboard
 
-Render the summary dashboard using `templates/mermaid/summary-dashboard.md` as a reference, with Unicode formatting:
+First, show the final progress block with all steps completed:
 
 ```text
-╭──────────────────────────────────────────────────╮
-│  🎉 Deployment Complete                           │
-│                                                   │
-│  🌐  http://<external-ip>                         │
-╰──────────────────────────────────────────────────╯
+  ✓ [1/4] 📦 Generate artifacts     10 files written
+  ✓ [2/4] 🔨 Build & push image     Image pushed to ACR
+  ✓ [3/4] 🚀 Deploy to AKS           2/2 pods running
+  ✓ [4/4] ✅ Verify & dashboard      All checks passed
+```
 
-  Azure Resources
-  ├─ AKS Cluster:  <aks_cluster_name>    https://portal.azure.com/#resource/...
-  ├─ ACR:          <acr_name>            https://portal.azure.com/#resource/...
-  └─ Identity:     <identity_name>       https://portal.azure.com/#resource/...
+Then render the celebration banner and summary dashboard:
 
-  Files Created
+```text
+╭─────────────────────────────────────────────────────────╮
+│                                                         │
+│     🎉  Deployment Successful!  🎉                      │
+│                                                         │
+│     Your app is live at:                                │
+│     🌐  http://<external-ip>                            │
+│                                                         │
+╰─────────────────────────────────────────────────────────╯
+
+  ☸️  Kubernetes Resources
+  ├─ Namespace:    <namespace>
+  ├─ Deployment:   2/2 pods running
+  ├─ Service:      ClusterIP on port <port>
+  └─ Gateway/Ingress: http://<external-ip>
+
+  ☁️  Azure Resources
+  ├─ AKS Cluster:  <aks_cluster_name>
+  ├─ ACR:          <acr_name>
+  └─ Identity:     <identity_name>
+
+  📄 Files Created
   ├─ Dockerfile
   ├─ .dockerignore
   └─ k8s/  (<N> manifests)
 
-  Next Steps
-  ├─ 🔒 Configure custom domain & TLS
-  ├─ 🔄 Set up GitHub Actions CI/CD (run full deploy-to-aks for Phase 5)
-  ├─ 📊 Enable monitoring & alerts
-  └─ 🧹 Clean up: az group delete -n <resource_group> --yes --no-wait
+  🚀 Next Steps
+  ├─ Configure custom domain & TLS
+  ├─ Set up GitHub Actions CI/CD
+  ├─ Enable monitoring & alerts
+  └─ Clean up: az group delete -n <resource_group> --yes --no-wait
 ```
-
-Also render a mermaid architecture diagram as a code block showing the deployed topology (Users → Gateway/Ingress → Service → Deployment → backing services if any, ACR, Monitoring).
 
 ### Completion
 
