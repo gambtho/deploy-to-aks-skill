@@ -272,6 +272,12 @@ IDENTITY_CLIENT_ID=$(az identity show \
     --resource-group "$RG_NAME" \
     --query clientId \
     --output tsv)
+AKS_RESOURCE_ID=$(az aks show \
+    --name "$AKS_NAME" \
+    --resource-group "$RG_NAME" \
+    --query id \
+    --output tsv)
+CURRENT_USER=$(az account show --query user.name -o tsv)
 
 echo ""
 echo "╭──────────────────────────────────────────────────╮"
@@ -285,7 +291,18 @@ echo "  Identity:         $IDENTITY_NAME (client: $IDENTITY_CLIENT_ID)"
 echo "  Namespace:        $NAMESPACE"
 echo "  kubectl context:  $AKS_NAME"
 echo ""
-echo "  Run quick deploy:"
+echo "  ⚠️  Required: Grant yourself namespace permissions"
+echo ""
+echo "  This cluster uses Kubernetes RBAC. To deploy apps, grant yourself"
+echo "  cluster-admin permissions via the Azure Portal:"
+echo ""
+echo "  1. Go to: https://portal.azure.com/#resource${AKS_RESOURCE_ID}/access"
+echo "  2. Click 'Add' → 'Add role assignment'"
+echo "  3. Role: 'Azure Kubernetes Service Cluster Admin Role'"
+echo "  4. Assign to: $CURRENT_USER"
+echo "  5. Click 'Save'"
+echo ""
+echo "  After granting permissions, run quick deploy:"
 echo "    \"Deploy my app to my existing AKS cluster\""
 echo ""
 echo "  Clean up later:"
