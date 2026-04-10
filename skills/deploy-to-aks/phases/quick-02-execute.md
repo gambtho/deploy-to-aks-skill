@@ -109,6 +109,15 @@ Generate from `templates/k8s/` templates. Replace all `<angle-bracket>` placehol
 
 Load `reference/safeguards.md`. Validate all generated manifests against DS001–DS013. Auto-fix all fixable violations (12 of 13 are auto-fixable). DS009 (no `:latest` tag) is resolved automatically since we tag with git SHA in Step 2.
 
+**AKS flavor handling:**
+- **AKS Automatic:** Safeguards are always enforced. Validation failures must be fixed before deployment.
+- **AKS Standard:** Safeguards may be off, in Warning mode, or in Enforcement mode. Check the cluster's `safeguardsProfile.level`:
+  ```bash
+  az aks show -g <rg> -n <cluster> --query 'safeguardsProfile.level' -o tsv
+  ```
+  - If `Enforcement`: same as Automatic — fix all violations
+  - If `Warning` or `Off`: validate manifests but don't block on violations. Mention any issues as warnings, not errors.
+
 Do NOT present a full safeguards table — the quick mode user doesn't need it. If all rules pass (expected), mention it in one line. If any required manual fixes, list only those.
 
 ### Output
@@ -122,7 +131,7 @@ Present a compact file summary (not full file contents):
     ├─ Dockerfile               <base-image> multi-stage
     ├─ .dockerignore             <N> patterns
     ├─ k8s/namespace.yaml
-    ├─ k8s/deployment.yaml       DS001-DS013 compliant
+    ├─ k8s/deployment.yaml       DS001-DS013 validated
     ├─ k8s/service.yaml          ClusterIP :<port>
     ├─ k8s/serviceaccount.yaml   Workload Identity linked
     ├─ k8s/gateway.yaml          Istio gateway           ← or ingress.yaml
