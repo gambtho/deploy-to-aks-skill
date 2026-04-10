@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "deploy-to-aks-skill"
 version = "0.1.0"
@@ -32,3 +36,8 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["skills*", "tests*"]
+exclude = ["site*", "docs*", ".github*"]
