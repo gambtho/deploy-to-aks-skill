@@ -3,8 +3,11 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-supported-22c55e?logo=anthropic&logoColor=white)](https://docs.anthropic.com/en/docs/claude-code/overview)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub_Copilot-supported-22c55e?logo=github&logoColor=white)](https://docs.github.com/en/copilot)
 [![OpenCode](https://img.shields.io/badge/OpenCode-supported-22c55e)](https://opencode.ai)
+[![Documentation](https://img.shields.io/badge/docs-live-blue)](https://gambtho.github.io/deploy-to-aks-skill/)
 
 A conversational AI skill that reads your project, generates production-ready deployment artifacts, and deploys to AKS — all from your terminal. No Kubernetes expertise required.
+
+📚 **[View full documentation and examples →](https://gambtho.github.io/deploy-to-aks-skill/)**
 
 ## How it works
 
@@ -233,7 +236,9 @@ The skill walks you through all 6 phases interactively. You approve the architec
 
 ## See it in action
 
-*Demo recording coming soon — a 60-second walkthrough from `Help me deploy this app to AKS` to a running application.*
+🎥 *Demo recording coming soon*
+
+See [example generated artifacts](https://gambtho.github.io/deploy-to-aks-skill/examples/) for Spring Boot, FastAPI, and other frameworks.
 
 ## Supported frameworks
 
