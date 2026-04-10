@@ -41,14 +41,16 @@ def test_unknown_flag_exits_nonzero(repo_root: Path):
 
 
 def test_missing_skill_dir_exits_nonzero(tmp_path: Path, repo_root: Path):
-    """Running from a directory without skills/ exits non-zero."""
+    """Running from a directory without skills/ exits non-zero when not piped."""
     # Copy just the script to a temp dir (no skills/ directory)
     shutil.copy2(repo_root / "install.sh", tmp_path / "install.sh")
     try:
+        # Set BASH_SOURCE to simulate running from a file (not piped)
+        # This prevents the auto-download behavior
         result = subprocess.run(
             [
                 "bash",
-                "install.sh",
+                str(tmp_path / "install.sh"),
                 "--platform",
                 "copilot",
                 "--scope",
@@ -131,3 +133,44 @@ def test_opencode_project_install(tmp_path: Path, repo_root: Path):
     assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not copied"
     assert any((skill_dir / "phases").iterdir()), "phases/ is empty"
     assert any((skill_dir / "templates").iterdir()), "templates/ is empty"
+
+
+def test_piped_install_auto_downloads(tmp_path: Path, repo_root: Path):
+    """Piped install (simulated) auto-downloads repo when skills/ missing."""
+    project_dir = tmp_path / "project"
+    project_dir.mkdir()
+
+    # Read the install script content
+    install_script = (repo_root / "install.sh").read_text()
+
+    try:
+        # Simulate piped install by piping script content to bash
+        # This should trigger the auto-download path
+        result = subprocess.run(
+            [
+                "bash",
+                "-s",
+                "--",
+                "--platform",
+                "opencode",
+                "--scope",
+                "project",
+                "--project-dir",
+                str(project_dir),
+            ],
+            input=install_script,
+            capture_output=True,
+            text=True,
+            cwd=tmp_path,  # Run from empty temp dir
+            timeout=60,  # Longer timeout for git clone
+        )
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError("Piped install timed out after 60s") from e
+
+    # Should succeed by downloading the repo
+    assert result.returncode == 0, f"Piped install failed: {result.stderr}"
+    assert "Downloading deploy-to-aks-skill repository" in result.stdout
+
+    # Verify skill was installed
+    skill_dir = project_dir / ".opencode" / "skills" / "deploy-to-aks"
+    assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not installed from downloaded repo"
