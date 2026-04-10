@@ -49,7 +49,8 @@ def test_knowledge_packs_referenced(skill_root: Path):
     """Every knowledge pack is referenced in 01-discover.md or SKILL.md."""
     skill_md = (skill_root / "SKILL.md").read_text()
     discover = (skill_root / "phases" / "01-discover.md").read_text()
-    combined = skill_md + discover
+    quick_scan = (skill_root / "phases" / "quick-01-scan-and-plan.md").read_text()
+    combined = skill_md + discover + quick_scan
     kp_dir = skill_root / "knowledge-packs" / "frameworks"
     assert kp_dir.exists(), f"Knowledge packs directory does not exist: {kp_dir}"
     files = [f for f in sorted(kp_dir.iterdir()) if f.is_file() and f.suffix == ".md"]
@@ -119,3 +120,29 @@ def test_github_actions_templates_referenced_in_phase5(skill_root: Path):
     for template in templates:
         ref = f"templates/github-actions/{template.name}"
         assert ref in phase5, f"Orphan GH Actions template: {template.name} not referenced in 05-pipeline.md"
+
+
+def test_quick_phase_dockerfile_templates_referenced(skill_root: Path):
+    """Every Dockerfile template is referenced in quick-02-execute.md."""
+    quick_exec = (skill_root / "phases" / "quick-02-execute.md").read_text()
+    docker_dir = skill_root / "templates" / "dockerfiles"
+    templates = [t for t in sorted(docker_dir.iterdir()) if t.is_file()]
+    assert len(templates) > 0, "No Dockerfile templates found"
+    for template in templates:
+        ref = f"templates/dockerfiles/{template.name}"
+        assert ref in quick_exec, (
+            f"Dockerfile template {template.name} not referenced in quick-02-execute.md"
+        )
+
+
+def test_quick_phase_k8s_templates_referenced(skill_root: Path):
+    """Every K8s template is referenced in quick-02-execute.md."""
+    quick_exec = (skill_root / "phases" / "quick-02-execute.md").read_text()
+    k8s_dir = skill_root / "templates" / "k8s"
+    templates = [t for t in sorted(k8s_dir.iterdir()) if t.is_file()]
+    assert len(templates) > 0, "No K8s templates found"
+    for template in templates:
+        ref = f"templates/k8s/{template.name}"
+        assert ref in quick_exec, (
+            f"K8s template {template.name} not referenced in quick-02-execute.md"
+        )
