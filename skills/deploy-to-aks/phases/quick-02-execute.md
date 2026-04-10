@@ -32,6 +32,10 @@ Render the full progress header before each step, updating previous steps' indic
 
 ## Step 1: Generate Artifacts
 
+### File Generation Strategy
+
+**CRITICAL:** All file writes in Step 1 must be batched. Present the list of files to generate, then write ALL files in parallel using multiple Write tool calls in a single agent response. This enables batch approval and eliminates repeated permission prompts.
+
 ### Dockerfile
 
 **If existing Dockerfile detected:** Validate against the best-practices checklist:
@@ -92,6 +96,8 @@ Add framework-specific entries:
 ### Kubernetes Manifests
 
 Generate from `templates/k8s/` templates. Replace all `<angle-bracket>` placeholders with actual values from Quick Phase 1 scan data.
+
+**IMPORTANT:** Announce ALL files to be generated first, then write them all in a single batch using parallel tool calls. This triggers a single batch approval dialog instead of prompting for each file individually.
 
 **Generation order:**
 
