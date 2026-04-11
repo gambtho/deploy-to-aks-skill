@@ -14,6 +14,7 @@ export default defineConfig({
     
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Comparison', link: '/comparison' },
       { text: 'Examples', link: '/examples/' },
       { text: 'Guide', link: '/guide/phases' }
     ],

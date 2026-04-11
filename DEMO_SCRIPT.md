@@ -30,6 +30,8 @@ rsync -av --delete \
   /home/tng/workspace/deploy-to-aks-skill/skills/deploy-to-aks/ \
   ~/.config/opencode/skills/deploy-to-aks/
 
+rsync -av --delete skills/deploy-to-aks ~/.copilot/skills/
+
 # Verify the update
 ls -la ~/.config/opencode/skills/deploy-to-aks/phases/quick-02-execute.md
 ```
