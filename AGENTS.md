@@ -8,7 +8,8 @@ This repository contains the **deploy-to-aks** AI coding agent skill — a phase
 
 ```
 skills/deploy-to-aks/
-  SKILL.md                          # Coordinator — entry point the agent reads first
+  SKILL.md                          # Coordinator — entry point (Claude Code & OpenCode)
+  SKILL.copilot.md                  # Monolithic build — single file for Copilot CLI (generated)
   phases/                           # 6 full + 2 quick phase instruction files
   reference/                        # AKS domain knowledge (safeguards, cost, workload identity, AKS flavors)
   templates/
@@ -18,7 +19,9 @@ skills/deploy-to-aks/
     k8s/                            # Kubernetes manifest templates
     mermaid/                        # Mermaid diagram templates for terminal rendering
   knowledge-packs/frameworks/       # Framework-specific deployment guidance (e.g., spring-boot.md)
-scripts/                            # Utility scripts (e.g., AKS prerequisites provisioning)
+scripts/
+  build-skill.py                    # Build script — assembles SKILL.copilot.md from source files
+  setup-aks-prerequisites.sh        # AKS Automatic test infrastructure provisioning
 docs/specs/                         # Design spec and implementation plan
 ```
 
@@ -53,6 +56,7 @@ The `scripts/setup-aks-prerequisites.sh` script provisions AKS Automatic test in
 - **Reference files** are factual documentation. Keep them current with Azure/AKS upstream changes. The safeguards reference (`reference/safeguards.md`) maps directly to AKS Deployment Safeguard policy IDs (DS001-DS013). Each reference file has a "Last updated" date at the top — update it when making changes.
 - **Design specs** (`docs/specs/`) are historical design records. They may be stale relative to the current implementation (e.g., the spec references an HTML visual companion that was replaced by mermaid diagrams). Treat them as context, not as source of truth.
 - **SKILL.md** is the coordinator file read by the agent first. Its checklist, phase table, and key principles section must stay in sync with the phase files.
+- **SKILL.copilot.md** is a generated monolithic build that inlines all phases, references, knowledge packs, and templates into a single file for Copilot CLI. **Do not edit it directly** — edit the source files and run `make build` to regenerate it. The build script is `scripts/build-skill.py`.
 - Do not add Terraform, Helm charts, or alternative CI/CD providers. Those are explicitly out of scope for v1.
 
 ## Testing
@@ -65,12 +69,13 @@ Two-tier automated test suite, plus manual integration testing:
 
 ```bash
 pip install -e ".[dev]"   # Install all test + lint dependencies
+make build                 # Build SKILL.copilot.md from source files
 make test                  # Run structural tests (~10s)
 make test-llm              # Run LLM tests (requires Copilot CLI)
 make lint                  # Lint test code with ruff
 ```
 
-When making changes, run `make test` locally before pushing. Also mentally trace through the 6-phase flow to ensure consistency.
+When making changes, run `make build && make test` locally before pushing. Also mentally trace through the 6-phase flow to ensure consistency.
 
 ### Suggested manual test scenarios
 

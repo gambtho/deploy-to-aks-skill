@@ -71,7 +71,7 @@ def test_missing_skill_dir_exits_nonzero(tmp_path: Path, repo_root: Path):
 
 
 def test_copilot_global_scope_installs(tmp_path: Path, repo_root: Path):
-    """--platform copilot --scope global installs to ~/.copilot/skills/."""
+    """--platform copilot --scope global installs SKILL.copilot.md as SKILL.md (monolithic)."""
     # Use a fake HOME to avoid polluting real ~/.copilot
     fake_home = tmp_path / "fakehome"
     fake_home.mkdir()
@@ -92,7 +92,8 @@ def test_copilot_global_scope_installs(tmp_path: Path, repo_root: Path):
     assert result.returncode == 0, f"Install failed: {result.stderr}"
     skill_dir = fake_home / ".copilot" / "skills" / "deploy-to-aks"
     assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not installed"
-    assert any((skill_dir / "phases").iterdir()), "phases/ is empty"
+    # Copilot install is monolithic, so phases/ and templates/ should NOT exist
+    assert not (skill_dir / "phases").exists(), "phases/ should not exist in monolithic install"
 
 
 def test_invalid_platform_exits_nonzero(repo_root: Path):
@@ -106,7 +107,7 @@ def test_invalid_platform_exits_nonzero(repo_root: Path):
 
 
 def test_copilot_project_install(tmp_path: Path, repo_root: Path):
-    """Copilot project install creates skill directory + instructions file."""
+    """Copilot project install creates skill as monolithic SKILL.md + instructions file."""
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     result = _run_install(
@@ -116,9 +117,10 @@ def test_copilot_project_install(tmp_path: Path, repo_root: Path):
     assert result.returncode == 0, f"Install failed: {result.stderr}"
 
     skill_dir = project_dir / ".copilot" / "skills" / "deploy-to-aks"
-    assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not copied"
-    assert any((skill_dir / "phases").iterdir()), "phases/ is empty"
-    assert any((skill_dir / "templates").iterdir()), "templates/ is empty"
+    assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not installed"
+    # Copilot install is monolithic, so phases/ and templates/ should NOT exist
+    assert not (skill_dir / "phases").exists(), "phases/ should not exist in monolithic install"
+    assert not (skill_dir / "templates").exists(), "templates/ should not exist in monolithic install"
     assert (project_dir / ".github" / "copilot-instructions.md").is_file(), "copilot-instructions.md not created"
 
 

@@ -72,6 +72,20 @@ install_skill() {
     fi
 }
 
+install_copilot_monolith() {
+    local target_dir="$1"
+    local monolith_source="$SKILL_SOURCE/SKILL.copilot.md"
+    
+    if [[ ! -f "$monolith_source" ]]; then
+        die "SKILL.copilot.md not found. The monolithic build artifact is required for Copilot CLI install."
+    fi
+    
+    mkdir -p "$target_dir"
+    confirm_replace "$target_dir/SKILL.md"
+    cp "$monolith_source" "$target_dir/SKILL.md"
+    info "Installed monolithic SKILL.md to $target_dir"
+}
+
 # --- Validation ---
 
 # If piped install, download the repository first
@@ -175,7 +189,7 @@ case "$PLATFORM" in
 
     copilot)
         if [[ "$SCOPE" == "global" ]]; then
-            install_skill "$HOME/.copilot/skills/deploy-to-aks" "symlink"
+            install_copilot_monolith "$HOME/.copilot/skills/deploy-to-aks"
             echo ""
             echo "Done! Start Copilot CLI and ask:"
             echo "  \"help me deploy to AKS\""
@@ -189,7 +203,7 @@ case "$PLATFORM" in
 When the developer asks for help deploying to Azure Kubernetes Service (AKS),
 containerizing their application for AKS, generating Kubernetes manifests, or
 creating Bicep infrastructure for Azure, read the skill instructions in
-`.copilot/skills/deploy-to-aks/SKILL.md` and follow them phase by phase.
+`.copilot/skills/deploy-to-aks/SKILL.md` and follow them.
 
 Trigger phrases include:
 - "deploy to AKS" / "deploy to Azure Kubernetes Service"
@@ -198,10 +212,10 @@ Trigger phrases include:
 - "create Bicep infrastructure" / "set up AKS infrastructure"
 - "help me deploy to Azure"
 
-Start by reading `.copilot/skills/deploy-to-aks/SKILL.md`, then follow its
-instructions phase by phase. Do not skip phases or reorder them.'
+The skill is self-contained in a single `.copilot/skills/deploy-to-aks/SKILL.md`
+file. All instructions, references, and templates are included inline.'
 
-            install_skill "$SKILL_TARGET" "copy"
+            install_copilot_monolith "$SKILL_TARGET"
 
             # Create/append copilot-instructions.md
             if [[ -f "$INSTRUCTIONS_FILE" ]]; then
