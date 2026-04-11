@@ -189,7 +189,7 @@ Loop through Steps 1-4 until the developer is satisfied. There is no limit on it
 
 ### HARD GATE
 
-**Do NOT proceed to Phase 3 until the developer gives explicit approval.**
+**Do NOT proceed to Phase 3 until the developer gives explicit approval.** Phase 3 generates a Dockerfile and Phase 4 generates Bicep infrastructure based on the architecture decisions made here — proceeding without approval risks provisioning unwanted (and billable) Azure resources.
 
 Acceptable approval signals:
 - "Looks good, proceed"

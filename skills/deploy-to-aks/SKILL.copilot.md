@@ -1,6 +1,6 @@
 ---
 name: deploy-to-aks
-description: Use when deploying a web application or API to Azure Kubernetes Service, containerizing an app for AKS, or generating Kubernetes manifests and Bicep infrastructure for Azure
+description: Use when deploying a web application or API to Azure Kubernetes Service, containerizing an app for AKS, generating Kubernetes manifests and Bicep infrastructure for Azure, setting up CI/CD pipelines for AKS, or migrating an existing app to Azure Kubernetes Service
 ---
 
 # Deploy to AKS
@@ -10,7 +10,7 @@ Guide developers through deploying applications to Azure Kubernetes Service (AKS
 
 ## Checklist
 
-You MUST track each of these items as a checklist and complete them in order:
+You MUST track each of these items as a checklist and complete them in order — skipping a phase can produce artifacts that reference resources or decisions from earlier phases that were never established:
 
 1. **Discover** -- scan the project, detect framework/language/dependencies, ask clarifying questions
 2. **Architect** -- plan infrastructure, show architecture diagram + cost estimate, get approval
@@ -21,25 +21,14 @@ You MUST track each of these items as a checklist and complete them in order:
 
 ## Process Flow
 
-```dot
-digraph deploy_flow {
-    rankdir=LR;
-    node [shape=box, style=rounded];
-
-    discover [label="1. Discover"];
-    architect [label="2. Architect\n(mermaid)"];
-    containerize [label="3. Containerize"];
-    scaffold [label="4. Scaffold\n(mermaid)"];
-    pipeline [label="5. Pipeline"];
-    deploy [label="6. Deploy\n(mermaid)"];
-
-    discover -> architect;
-    architect -> containerize [label="approved"];
-    architect -> architect [label="iterate"];
-    containerize -> scaffold;
-    scaffold -> pipeline;
-    pipeline -> deploy;
-}
+```mermaid
+flowchart LR
+    discover["1. Discover"] --> architect["2. Architect"]
+    architect -- approved --> containerize["3. Containerize"]
+    architect -- iterate --> architect
+    containerize --> scaffold["4. Scaffold"]
+    scaffold --> pipeline["5. Pipeline"]
+    pipeline --> deploy["6. Deploy"]
 ```
 
 ## Quick Deploy Mode
@@ -50,9 +39,9 @@ For developers who already have AKS infrastructure in place, a fast-path mode sk
 
 Before starting the 6-phase flow, check for pre-existing infrastructure:
 
-1. The developer explicitly asks for quick deploy (e.g., "deploy my app to my existing cluster", "I already have AKS set up")
-2. `kubectl config current-context` returns an AKS context
-3. `az aks show` succeeds for the current context's cluster
+1. `az aks show` succeeds for the current context's cluster (strongest signal — confirms a live AKS cluster)
+2. `kubectl config current-context` returns an AKS context (weaker — context may be stale)
+3. The developer explicitly asks for quick deploy (e.g., "deploy my app to my existing cluster", "I already have AKS set up")
 
 If any signal indicates existing infrastructure, offer quick deploy mode:
 
@@ -67,7 +56,7 @@ If any signal indicates existing infrastructure, offer quick deploy mode:
 
 | Phase | Read | Also load |
 |-------|------|-----------|
-| Quick Deploy | [Quick Deploy](#quick-deploy-instructions) | the [<detected>](#knowledge-packs) section below (if exists), [Deployment Safeguards](#reference-deployment-safeguards), [Workload Identity](#reference-workload-identity) |
+| Quick Deploy | [Quick Deploy](#quick-deploy-instructions) | `reference/detection.md`, the [<detected>](#knowledge-packs) section below (if exists), [Deployment Safeguards](#reference-deployment-safeguards), [Workload Identity](#reference-workload-identity) |
 
 ### To provision test infrastructure
 
@@ -79,12 +68,12 @@ At each phase, read the corresponding instruction file for detailed guidance:
 
 | Phase | Read | Also load |
 |-------|------|-----------|
-| 1. Discover | [Phase 1: Discover](#phase-1-discover) | the [<detected>](#knowledge-packs) section below (if exists); [AKS Automatic](#reference-aks-automatic) or [AKS Standard](#reference-aks-standard) based on AKS flavor choice |
+| 1. Discover | [Phase 1: Discover](#phase-1-discover) | `reference/detection.md`, the [<detected>](#knowledge-packs) section below (if exists); [AKS Automatic](#reference-aks-automatic) or [AKS Standard](#reference-aks-standard) based on AKS flavor choice |
 | 2. Architect | [Phase 2: Architect](#phase-2-architect) | [Cost Estimation](#reference-cost-estimation), [templates/mermaid/architecture-diagram.md](#templates-mermaid-diagrams) |
 | 3. Containerize | [Phase 3: Containerize](#phase-3-containerize) | -- |
 | 4. Scaffold | [Phase 4: Scaffold](#phase-4-scaffold) | [Deployment Safeguards](#reference-deployment-safeguards), [Workload Identity](#reference-workload-identity), [templates/mermaid/architecture-diagram.md](#templates-mermaid-diagrams) |
 | 5. Pipeline | [Phase 5: Pipeline](#phase-5-pipeline) | -- |
-| 6. Deploy | [Phase 6: Deploy](#phase-6-deploy) | [templates/mermaid/summary-dashboard.md](#templates-mermaid-diagrams) |
+| 6. Deploy | [Phase 6: Deploy](#phase-6-deploy) | `reference/rollback.md`, [templates/mermaid/summary-dashboard.md](#templates-mermaid-diagrams) |
 
 ### Knowledge Packs
 
@@ -122,10 +111,6 @@ Use terminal-native question prompts (not visual cards) when the developer faces
 - Sensible defaults -- AKS Automatic, Ingress (Web App Routing), Workload Identity, 2 replicas
 - No Kubernetes jargon until Phase 4 -- frame AKS as a "scalable app platform"
 
-## Housekeeping
-
-At any point during execution, if the project has a `.gitignore`, check whether your agent working directory is excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). If not, add it. These directories contain session-specific data and should never be committed to the repository.
-
 ## Quick Deploy Instructions
 
 Deploy an application to an existing AKS cluster with production-grade artifacts.
@@ -142,31 +127,15 @@ Scan the project and Azure environment. Ask at most one clarifying question (onl
 
 ### Framework Detection
 
-Scan for signal files at the project root (and one level deep for monorepos):
-
-| Signal File | Framework | Sub-framework Detection |
-|---|---|---|
-| `package.json` | Node.js | `express`, `fastify`, `@nestjs/core`, `next`, `@remix-run/node`, `hono`, `koa` |
-| `requirements.txt` / `pyproject.toml` / `Pipfile` | Python | `fastapi`, `django`, `flask`, `starlette` |
-| `pom.xml` / `build.gradle` / `build.gradle.kts` | Java | `spring-boot-starter-web`, `org.springframework.boot`, `quarkus-resteasy` |
-| `go.mod` | Go | `gin-gonic/gin`, `labstack/echo`, `gofiber/fiber` |
-| `*.csproj` | .NET | `Microsoft.AspNetCore.*` |
-| `Cargo.toml` | Rust | `actix-web`, `axum` |
+Follow the framework detection table in `reference/detection.md`. Scan for signal files at the project root (and one level deep for monorepos).
 
 ### Port Detection
 
-Check in priority order (first match wins):
-
-1. `Dockerfile` — `EXPOSE <port>`
-2. `.env` / `.env.example` — `PORT=<number>`
-3. Source code — `app.listen(<number>)`, `server.port=<number>`
-4. Framework defaults — Express: 3000, FastAPI: 8000, Spring Boot: 8080, ASP.NET: 8080, Gin: 8080
+Follow the port detection table in `reference/detection.md` (first match wins).
 
 ### Health Endpoint Detection
 
-Grep source tree for route registrations matching: `/health`, `/healthz`, `/ready`, `/readiness`, `/liveness`, `/startup`, `/ping`, `/api/health`, `/api/healthz`
-
-If none found, use `/health` as default in probes.
+Follow the health endpoint detection table in `reference/detection.md`. If none found, use `/health` as default in probes.
 
 ### Existing Artifact Detection
 
@@ -350,19 +319,7 @@ Scan the project root thoroughly. Collect all of the following categories in a s
 
 ### 1.1 Framework Detection
 
-Scan for signal files at the project root (and one level deep for monorepos). Map each signal to a framework and, where possible, a sub-framework:
-
-| Signal File | Framework | Sub-framework Detection |
-|---|---|---|
-| `package.json` | Node.js | Inspect `dependencies` for: **Express** (`express`), **Fastify** (`fastify`), **NestJS** (`@nestjs/core`), **Next.js** (`next`), **Remix** (`@remix-run/node`), **Hono** (`hono`), **Koa** (`koa`) |
-| `requirements.txt` | Python | Scan for: **FastAPI** (`fastapi`), **Django** (`django`), **Flask** (`flask`), **Starlette** (`starlette`), **Gunicorn** (`gunicorn`) |
-| `pyproject.toml` | Python | Parse `[project.dependencies]` or `[tool.poetry.dependencies]` for the same libraries as above |
-| `Pipfile` | Python | Parse `[packages]` section for the same libraries as above |
-| `pom.xml` | Java | Search for `<artifactId>spring-boot-starter-web</artifactId>` → **Spring Boot**; `<artifactId>quarkus-resteasy</artifactId>` → **Quarkus**; `<artifactId>micronaut-http-server-netty</artifactId>` → **Micronaut** |
-| `build.gradle` / `build.gradle.kts` | Java / Kotlin | Search for `org.springframework.boot` → **Spring Boot**; `io.quarkus` → **Quarkus**; `io.micronaut` → **Micronaut** |
-| `go.mod` | Go | Parse `require` block for: `github.com/gin-gonic/gin` → **Gin**; `github.com/labstack/echo` → **Echo**; `github.com/gofiber/fiber` → **Fiber**; `net/http` (stdlib) → **net/http** |
-| `*.csproj` | .NET | Search for `<PackageReference Include="Microsoft.AspNetCore.*"` → **ASP.NET Core**; check `<TargetFramework>` for version (e.g. `net8.0`) |
-| `Cargo.toml` | Rust | Parse `[dependencies]` for: `actix-web` → **Actix**; `axum` → **Axum**; `rocket` → **Rocket**; `warp` → **Warp** |
+Follow the framework detection table in `reference/detection.md`. Scan for signal files at the project root (and one level deep for monorepos). Map each signal to a framework and sub-framework.
 
 **If multiple signal files are found** (e.g. both `package.json` and `requirements.txt`), record all of them — this may indicate a monorepo or polyglot project. Flag for clarification in Step 3.
 
@@ -384,6 +341,10 @@ Look for files and directories that indicate the project already has deployment 
 | `terraform/*.tf` or `*.tf` in root | Terraform IaC exists | Scan for `azurerm_kubernetes_cluster`, `azurerm_container_registry`, and other Azure resources |
 | `skaffold.yaml` | Skaffold dev workflow exists | Record build/deploy configuration |
 | `kustomization.yaml` | Kustomize overlays exist | Record base and overlay structure |
+
+### 1.2a Housekeeping Check
+
+If the project has a `.gitignore`, check whether the agent working directory is excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). If not, add it — these directories contain session-specific data and should never be committed to the repository.
 
 ### 1.3 Environment & Dependency Detection
 
@@ -438,32 +399,9 @@ Scan environment files and source code to detect backing services and Azure SDK 
 
 ### 1.4 Port & Health Endpoint Detection
 
-Determine the application's listen port and any existing health check endpoints.
+Determine the application's listen port and any existing health check endpoints using the detection tables in `reference/detection.md`.
 
-**Port detection** — check these sources in priority order (first match wins):
-
-| Source | What to Look For | Example |
-|---|---|---|
-| `Dockerfile` | `EXPOSE <port>` directive | `EXPOSE 3000` |
-| `.env` / `.env.example` | `PORT=<number>` | `PORT=8080` |
-| `package.json` (`scripts.start`) | `--port <number>` or `-p <number>` | `next start --port 3000` |
-| Source code | `app.listen(<number>)`, `.listen(<number>)`, `server.port=<number>` | `app.listen(3000)` |
-| `application.properties` / `application.yml` (Java) | `server.port=<number>` | `server.port=8080` |
-| `appsettings.json` (.NET) | `"Urls": "http://*:<number>"` | `"Urls": "http://*:5000"` |
-| Framework defaults | Use known defaults if nothing explicit found | Express: 3000, FastAPI: 8000, Spring Boot: 8080, ASP.NET: 5000, Gin: 8080 |
-
-**Health endpoint detection** — grep the entire source tree for route registrations matching these patterns:
-
-| Pattern | Endpoint Type |
-|---|---|
-| `/health` | Generic health check |
-| `/healthz` | Kubernetes-style health check |
-| `/ready`, `/readiness` | Readiness probe |
-| `/liveness` | Liveness probe |
-| `/startup` | Startup probe |
-| `/ping` | Simple ping (sometimes used as health) |
-| `/status` | Status endpoint |
-| `/api/health`, `/api/healthz` | Prefixed health check |
+Follow the **Port Detection** table's priority order (first match wins). Follow the **Health Endpoint Detection** table patterns to grep the source tree for route registrations.
 
 Record the **HTTP method** (GET/HEAD) and **expected response code** (200) for each detected endpoint. If no health endpoints are found, flag this — Phase 2 will generate them.
 
@@ -812,7 +750,7 @@ Loop through Steps 1-4 until the developer is satisfied. There is no limit on it
 
 ### HARD GATE
 
-**Do NOT proceed to Phase 3 until the developer gives explicit approval.**
+**Do NOT proceed to Phase 3 until the developer gives explicit approval.** Phase 3 generates a Dockerfile and Phase 4 generates Bicep infrastructure based on the architecture decisions made here — proceeding without approval risks provisioning unwanted (and billable) Azure resources.
 
 Acceptable approval signals:
 - "Looks good, proceed"
@@ -883,6 +821,10 @@ Every production Dockerfile MUST satisfy these requirements. Each item explains 
 ---
 
 ## Step 2 — Generate or Improve the Dockerfile
+
+### Knowledge pack check
+
+Before selecting a template, check if a knowledge pack was loaded in Phase 1 (the [<framework>](#knowledge-packs) section below). If one exists, read its **Dockerfile patterns** and **health endpoint configuration** sections first — prefer the pack's framework-specific guidance over the generic template. The pack may specify a different base image, build command, or health check approach that is more appropriate for the framework.
 
 ### Template selection
 
@@ -1036,18 +978,23 @@ file, briefly explain what was generated and why.
    (reference: [templates/k8s/deployment.yaml](#templates-kubernetes-manifests))
 4. `k8s/service.yaml` — ClusterIP Service
    (reference: [templates/k8s/service.yaml](#templates-kubernetes-manifests))
-5. `k8s/gateway.yaml` — Gateway resource (only if Istio Gateway API is enabled)
-   OR `k8s/ingress.yaml` — Ingress resource (default for both AKS Automatic and Standard)
-   (reference: [templates/k8s/gateway.yaml](#templates-kubernetes-manifests), [templates/k8s/httproute.yaml](#templates-kubernetes-manifests),
-   or [templates/k8s/ingress.yaml](#templates-kubernetes-manifests))
-6. `k8s/httproute.yaml` — HTTPRoute (only if Gateway was generated)
-7. `k8s/hpa.yaml` — HorizontalPodAutoscaler
+5. **If Istio Gateway API is enabled:**
+   - `k8s/gateway.yaml` — Gateway resource (reference: [templates/k8s/gateway.yaml](#templates-kubernetes-manifests))
+   - `k8s/httproute.yaml` — HTTPRoute for traffic routing (reference: [templates/k8s/httproute.yaml](#templates-kubernetes-manifests))
+
+   **Otherwise (default for both AKS Automatic and Standard):**
+   - `k8s/ingress.yaml` — Ingress resource with Web App Routing (reference: [templates/k8s/ingress.yaml](#templates-kubernetes-manifests))
+6. `k8s/hpa.yaml` — HorizontalPodAutoscaler
    (reference: [templates/k8s/hpa.yaml](#templates-kubernetes-manifests))
-8. `k8s/pdb.yaml` — PodDisruptionBudget
+7. `k8s/pdb.yaml` — PodDisruptionBudget
    (reference: [templates/k8s/pdb.yaml](#templates-kubernetes-manifests))
-9. `k8s/configmap.yaml` — ConfigMap for non-secret configuration (if the app requires
+8. `k8s/configmap.yaml` — ConfigMap for non-secret configuration (if the app requires
    environment-specific config values)
    (reference: [templates/k8s/configmap.yaml](#templates-kubernetes-manifests))
+
+### Knowledge pack check
+
+Before generating manifests, check if a knowledge pack was loaded in Phase 1 (the [<framework>](#knowledge-packs) section below). If one exists, read its **probe settings**, **writable path requirements**, **env var patterns**, and **ConfigMap structure** sections. Apply these when customizing templates — for example, the pack may specify non-standard liveness probe paths, directories that need writable volume mounts, or environment variables that should come from a ConfigMap rather than being hardcoded.
 
 ### Template usage
 
@@ -1372,7 +1319,7 @@ This is the only phase that mutates cloud state. Treat every command with the gr
 
 ## Confirmation Gate Pattern
 
-Every destructive or billable action in this phase MUST use this exact pattern:
+Every destructive or billable action in this phase MUST use this exact pattern — accidental Azure resource creation can incur immediate costs, and premature manifest application can disrupt a running cluster:
 
 ```
 Next I'll [action in plain English]. This will run:
@@ -1385,8 +1332,8 @@ Want me to proceed? [Yes / No, I'll do it myself]
 ```
 
 Rules:
-- **Never** combine multiple destructive commands into a single gate. One gate per action.
-- **Never** skip a gate because a previous gate was approved. Each gate stands alone.
+- **Never** combine multiple destructive commands into a single gate. One gate per action — combining them prevents the developer from catching a mistake before the next command runs.
+- **Never** skip a gate because a previous gate was approved. Each gate stands alone — earlier approval does not imply consent for later, possibly more expensive actions.
 - If the developer says "No, I'll do it myself," output the command cleanly so they can copy-paste it, then wait for them to confirm the step is complete before continuing.
 - If the developer says "Yes to all" or similar, you may still show what each command does but proceed without waiting.
 
@@ -1582,7 +1529,7 @@ echo "AKS: $AKS_NAME"
 If the deployment fails:
 - Show the error: `az deployment group show --resource-group <rg> --name main --query properties.error`
 - Common issues: quota limits, name conflicts, region availability
-- See **Rollback Guidance** at the end of this file
+- See **reference/rollback.md** for recovery procedures.
 
 ---
 
@@ -1715,7 +1662,7 @@ If the rollout times out or fails:
 - Check pod status: `kubectl get pods -l app=myapp`
 - Check events: `kubectl describe pod -l app=myapp`
 - Check logs: `kubectl logs -l app=myapp --tail=50`
-- See **Rollback Guidance** at the end of this file
+- See **reference/rollback.md** for recovery procedures.
 
 ---
 
@@ -1915,107 +1862,7 @@ Do **not** push unless the developer explicitly asks. Mention that the CI/CD pip
 
 ## Rollback Guidance
 
-If any step fails, use the guidance below. Do not proceed to the next step until the failure is resolved or the developer explicitly chooses to abort.
-
-### Bicep Deployment Failed (Step 4)
-
-```bash
-# Check what went wrong
-az deployment group show \
-  --resource-group rg-myapp-dev \
-  --name main \
-  --query properties.error \
-  --output json
-
-# Cancel an in-progress deployment
-az deployment group cancel \
-  --resource-group rg-myapp-dev \
-  --name main
-
-# Common fixes:
-# - Name conflict     → change appName parameter, redeploy
-# - Quota exceeded    → request quota increase or change VM size / region
-# - Region not available → change location parameter
-# - Validation error  → fix the Bicep template, redeploy
-
-# Fix and retry (idempotent — safe to re-run):
-az deployment group create \
-  --resource-group rg-myapp-dev \
-  --template-file infra/main.bicep \
-  --parameters appName=myapp ...
-```
-
-### Image Build Failed (Step 5)
-
-```bash
-# No cloud resources were persisted — nothing to roll back.
-# Fix the issue and retry:
-
-# Common fixes:
-# - Dockerfile syntax error       → edit Dockerfile
-# - Missing file in build context → check .dockerignore
-# - Dependency install failure    → fix package.json / requirements.txt / go.mod
-
-# Retry:
-az acr build --registry <acr-name> --image <app-name>:<git-sha> .
-```
-
-### kubectl apply Failed (Step 6b)
-
-```bash
-# Remove the partially applied resources:
-kubectl delete -f k8s/
-
-# Common fixes:
-# - YAML syntax error      → validate with: kubectl apply -f k8s/ --dry-run=client
-# - Invalid resource field  → check API version matches cluster version
-# - Image pull error        → verify ACR name in deployment.yaml matches actual ACR
-# - Namespace doesn't exist → create it first or remove namespace from manifests
-
-# Fix and retry:
-kubectl apply -f k8s/
-```
-
-### Pods Not Starting (Step 6c / Step 7)
-
-```bash
-# Diagnose:
-kubectl get pods -l app=myapp
-kubectl describe pod -l app=myapp
-kubectl logs -l app=myapp --tail=50
-
-# Common error patterns:
-
-# CrashLoopBackOff — app crashes on startup
-#   → Check logs for the crash reason
-#   → Usually: missing env var, bad database connection string, port mismatch
-
-# ImagePullBackOff — can't pull the container image
-#   → Verify image name: kubectl get deployment myapp -o jsonpath='{.spec.template.spec.containers[0].image}'
-#   → Verify ACR access: az aks check-acr --resource-group <rg> --name <aks> --acr <acr>.azurecr.io
-
-# Pending — pod can't be scheduled
-#   → Check node status: kubectl get nodes
-#   → Check resource requests vs available capacity: kubectl describe nodes
-
-# OOMKilled — app exceeded memory limit
-#   → Increase memory limit in k8s/deployment.yaml and re-apply
-
-# After fixing, re-apply:
-kubectl apply -f k8s/
-kubectl rollout status deployment/myapp --timeout=300s
-```
-
-### Nuclear Option: Tear Everything Down
-
-If the developer wants to start over completely:
-
-```bash
-# This deletes ALL resources in the resource group — irreversible.
-az group delete --name rg-myapp-dev --yes --no-wait
-```
-
-This is itself a destructive command. If the developer asks to tear down, use a confirmation gate for it.
+If any step fails, consult `reference/rollback.md` for recovery procedures. Do not proceed to the next step until the failure is resolved or the developer explicitly chooses to abort.
 
 ---
 

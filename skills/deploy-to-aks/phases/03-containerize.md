@@ -39,6 +39,10 @@ Every production Dockerfile MUST satisfy these requirements. Each item explains 
 
 ## Step 2 — Generate or Improve the Dockerfile
 
+### Knowledge pack check
+
+Before selecting a template, check if a knowledge pack was loaded in Phase 1 (`knowledge-packs/frameworks/<framework>.md`). If one exists, read its **Dockerfile patterns** and **health endpoint configuration** sections first — prefer the pack's framework-specific guidance over the generic template. The pack may specify a different base image, build command, or health check approach that is more appropriate for the framework.
+
 ### Template selection
 
 Choose the template that matches the primary framework detected in Phase 1:
