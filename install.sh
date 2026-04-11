@@ -139,22 +139,12 @@ case "$PLATFORM" in
     *) die "Unknown platform: $PLATFORM. Use claude-code, copilot, or opencode." ;;
 esac
 
-# Copilot has no global scope
-if [[ "$PLATFORM" == "copilot" && "$SCOPE" == "global" ]]; then
-    die "GitHub Copilot does not support global skills. Use --scope project instead."
-fi
-
 if [[ -z "$SCOPE" ]]; then
-    if [[ "$PLATFORM" == "copilot" ]]; then
-        info "GitHub Copilot only supports project-level installation."
-        SCOPE="project"
-    else
-        prompt_choice "Install scope?" "Global (available in all projects)" "Project (install into a specific project)"
-        case $? in
-            0) SCOPE="global" ;;
-            1) SCOPE="project" ;;
-        esac
-    fi
+    prompt_choice "Install scope?" "Global (available in all projects)" "Project (install into a specific project)"
+    case $? in
+        0) SCOPE="global" ;;
+        1) SCOPE="project" ;;
+    esac
 fi
 
 if [[ "$SCOPE" == "project" && -z "$PROJECT_DIR" ]]; then
@@ -184,14 +174,22 @@ case "$PLATFORM" in
         ;;
 
     copilot)
-        SKILL_TARGET="$PROJECT_DIR/.github/skills/deploy-to-aks"
-        INSTRUCTIONS_FILE="$PROJECT_DIR/.github/copilot-instructions.md"
-        INSTRUCTION_BLOCK='## AKS Deployment Skill
+        if [[ "$SCOPE" == "global" ]]; then
+            install_skill "$HOME/.copilot/skills/deploy-to-aks" "symlink"
+            echo ""
+            echo "Done! Start Copilot CLI and ask:"
+            echo "  \"help me deploy to AKS\""
+            echo ""
+            echo "The skill is available globally via ~/.copilot/skills/."
+        else
+            SKILL_TARGET="$PROJECT_DIR/.copilot/skills/deploy-to-aks"
+            INSTRUCTIONS_FILE="$PROJECT_DIR/.github/copilot-instructions.md"
+            INSTRUCTION_BLOCK='## AKS Deployment Skill
 
 When the developer asks for help deploying to Azure Kubernetes Service (AKS),
 containerizing their application for AKS, generating Kubernetes manifests, or
-creating Bicep infrastructure for Azure, follow the phased deployment guide
-in `.github/skills/deploy-to-aks/SKILL.md`.
+creating Bicep infrastructure for Azure, read the skill instructions in
+`.copilot/skills/deploy-to-aks/SKILL.md` and follow them phase by phase.
 
 Trigger phrases include:
 - "deploy to AKS" / "deploy to Azure Kubernetes Service"
@@ -200,42 +198,40 @@ Trigger phrases include:
 - "create Bicep infrastructure" / "set up AKS infrastructure"
 - "help me deploy to Azure"
 
-Start by reading `.github/skills/deploy-to-aks/SKILL.md`, then follow its
+Start by reading `.copilot/skills/deploy-to-aks/SKILL.md`, then follow its
 instructions phase by phase. Do not skip phases or reorder them.'
 
-        install_skill "$SKILL_TARGET" "copy"
+            install_skill "$SKILL_TARGET" "copy"
 
-        # Create/append copilot-instructions.md
-        if [[ -f "$INSTRUCTIONS_FILE" ]]; then
-            if grep -q "AKS Deployment Skill" "$INSTRUCTIONS_FILE"; then
-                info "copilot-instructions.md already contains AKS deployment reference. Skipping."
-            else
-                echo ""
-                info "Appending to existing $INSTRUCTIONS_FILE:"
-                echo "---"
-                echo "$INSTRUCTION_BLOCK"
-                echo "---"
-                # Read from /dev/tty to work when script is piped from curl
-                read -rp "Proceed? [y/N]: " confirm < /dev/tty
-                if [[ "$confirm" =~ ^[yY]$ ]]; then
-                    printf '\n%s\n' "$INSTRUCTION_BLOCK" >> "$INSTRUCTIONS_FILE"
-                    info "Appended instruction block."
+            # Create/append copilot-instructions.md
+            if [[ -f "$INSTRUCTIONS_FILE" ]]; then
+                if grep -q "AKS Deployment Skill" "$INSTRUCTIONS_FILE"; then
+                    info "copilot-instructions.md already contains AKS deployment reference. Skipping."
                 else
-                    info "Skipped. You can manually add the instruction block to $INSTRUCTIONS_FILE."
+                    echo ""
+                    info "Appending to existing $INSTRUCTIONS_FILE:"
+                    echo "---"
+                    echo "$INSTRUCTION_BLOCK"
+                    echo "---"
+                    # Read from /dev/tty to work when script is piped from curl
+                    read -rp "Proceed? [y/N]: " confirm < /dev/tty
+                    if [[ "$confirm" =~ ^[yY]$ ]]; then
+                        printf '\n%s\n' "$INSTRUCTION_BLOCK" >> "$INSTRUCTIONS_FILE"
+                        info "Appended instruction block."
+                    else
+                        info "Skipped. You can manually add the instruction block to $INSTRUCTIONS_FILE."
+                    fi
                 fi
+            else
+                mkdir -p "$(dirname "$INSTRUCTIONS_FILE")"
+                printf '%s\n' "$INSTRUCTION_BLOCK" > "$INSTRUCTIONS_FILE"
+                info "Created $INSTRUCTIONS_FILE"
             fi
-        else
-            mkdir -p "$(dirname "$INSTRUCTIONS_FILE")"
-            printf '%s\n' "$INSTRUCTION_BLOCK" > "$INSTRUCTIONS_FILE"
-            info "Created $INSTRUCTIONS_FILE"
-        fi
 
-        echo ""
-        echo "Done! Open Copilot in $PROJECT_DIR and ask:"
-        echo "  \"help me deploy to AKS\""
-        echo ""
-        echo "Note: GitHub Copilot does not support slash commands for custom skills."
-        echo "The skill activates when you ask about AKS deployment."
+            echo ""
+            echo "Done! Open Copilot CLI in $PROJECT_DIR and ask:"
+            echo "  \"help me deploy to AKS\""
+        fi
         ;;
 
     opencode)

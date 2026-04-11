@@ -1,9 +1,10 @@
 """install.sh validation.
 
-Tests error paths (help, unknown flags, missing skill dir, invalid platform,
-copilot global) and happy paths (all 3 platforms with --scope project).
+Tests error paths (help, unknown flags, missing skill dir, invalid platform)
+and happy paths (all 3 platforms with --scope project, copilot global).
 """
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -69,11 +70,29 @@ def test_missing_skill_dir_exits_nonzero(tmp_path: Path, repo_root: Path):
     assert "Cannot find" in result.stderr
 
 
-def test_copilot_global_scope_exits_nonzero(repo_root: Path):
-    """--platform copilot --scope global exits non-zero."""
-    result = _run_install(["--platform", "copilot", "--scope", "global"], cwd=repo_root)
-    assert result.returncode != 0
-    assert "global" in result.stderr.lower()
+def test_copilot_global_scope_installs(tmp_path: Path, repo_root: Path):
+    """--platform copilot --scope global installs to ~/.copilot/skills/."""
+    # Use a fake HOME to avoid polluting real ~/.copilot
+    fake_home = tmp_path / "fakehome"
+    fake_home.mkdir()
+
+    env = os.environ.copy()
+    env["HOME"] = str(fake_home)
+    try:
+        result = subprocess.run(
+            ["bash", "install.sh", "--platform", "copilot", "--scope", "global"],
+            capture_output=True,
+            text=True,
+            cwd=repo_root,
+            env=env,
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError("install.sh timed out after 30s") from e
+    assert result.returncode == 0, f"Install failed: {result.stderr}"
+    skill_dir = fake_home / ".copilot" / "skills" / "deploy-to-aks"
+    assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not installed"
+    assert any((skill_dir / "phases").iterdir()), "phases/ is empty"
 
 
 def test_invalid_platform_exits_nonzero(repo_root: Path):
@@ -87,7 +106,7 @@ def test_invalid_platform_exits_nonzero(repo_root: Path):
 
 
 def test_copilot_project_install(tmp_path: Path, repo_root: Path):
-    """Copilot project install creates full skill directory + instructions file."""
+    """Copilot project install creates skill directory + instructions file."""
     project_dir = tmp_path / "project"
     project_dir.mkdir()
     result = _run_install(
@@ -96,7 +115,7 @@ def test_copilot_project_install(tmp_path: Path, repo_root: Path):
     )
     assert result.returncode == 0, f"Install failed: {result.stderr}"
 
-    skill_dir = project_dir / ".github" / "skills" / "deploy-to-aks"
+    skill_dir = project_dir / ".copilot" / "skills" / "deploy-to-aks"
     assert (skill_dir / "SKILL.md").is_file(), "SKILL.md not copied"
     assert any((skill_dir / "phases").iterdir()), "phases/ is empty"
     assert any((skill_dir / "templates").iterdir()), "templates/ is empty"
