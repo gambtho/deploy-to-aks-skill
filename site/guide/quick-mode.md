@@ -17,19 +17,13 @@ If you already have an AKS cluster running, quick deploy mode gets you from "I h
 
 ## What Quick Mode Does
 
-**Phase 1: Scan & Plan**
-- Scans your project
-- Detects framework
-- Generates Dockerfile and K8s manifests
-- Validates against AKS Deployment Safeguards
-- Single approval gate for all artifacts
+Quick mode runs as a single phase with 5 sections:
 
-**Phase 2: Execute**
-- Builds Docker image
-- Pushes to your existing ACR
-- Deploys to your existing AKS cluster
-- Verifies deployment health
-- Streams output in real-time
+1. **Detection** — scans your project, detects framework and port, auto-discovers your AKS cluster and ACR, loads framework-specific knowledge
+2. **File Generation** — generates Dockerfile, .dockerignore, and K8s manifests (namespace, deployment, service, gateway/ingress, HPA, PDB, service account)
+3. **Safeguards Validation** — validates all manifests against AKS Deployment Safeguards (DS001-DS013) before deploying
+4. **Deploy** — creates namespace, builds and pushes image via ACR, applies manifests, waits for rollout
+5. **Verify** — waits for external IP, confirms health endpoint responds
 
 ## What Quick Mode Skips
 
@@ -71,22 +65,23 @@ The skill detects your context and routes to quick mode automatically.
 
 | Time | Activity |
 |------|----------|
-| 0:00 | Skill scans project, detects FastAPI + Redis |
-| 0:30 | Generates Dockerfile, deployment.yaml, service.yaml |
-| 1:00 | You review and approve artifacts (single gate) |
-| 1:30 | Builds Docker image (multi-stage build) |
-| 3:00 | Pushes to ACR |
-| 4:00 | Deploys to AKS namespace |
-| 5:00 | Waits for rollout complete |
-| 5:30 | Verifies health checks pass |
-| 6:00 | ✅ Deployed and running |
+| 0:00 | Skill scans project, detects framework and Azure infrastructure |
+| 0:30 | Generates Dockerfile, K8s manifests, validates safeguards |
+| 1:30 | Builds Docker image via `az acr build` |
+| 3:00 | Deploys to AKS namespace |
+| 4:00 | Waits for rollout complete |
+| 5:00 | Verifies health checks pass, shows endpoint URL |
+| 5:30 | ✅ Deployed and running |
 
 ## What You Get
 
 Same production-ready artifacts as full mode:
 
 - Multi-stage Dockerfile (non-root, optimized)
-- Kubernetes manifests (passing all Deployment Safeguards)
+- Kubernetes manifests (passing all 13 Deployment Safeguards)
+- HPA with scale-down stabilization and PodDisruptionBudget
+- Gateway API (AKS Automatic) or Ingress (AKS Standard) routing
+- Workload Identity integration
 - Deployment verification and health checks
 
 You just skip the infrastructure provisioning and CI/CD setup.
@@ -114,8 +109,8 @@ Once deployed via quick mode, you can:
 | AKS cluster | ❌ (uses existing) | ✅ |
 | ACR | ❌ (uses existing) | ✅ |
 | Backing services | ❌ | ✅ |
-| **Approval Gates** | | |
-| Artifacts review | 1 (batched) | 6 (per phase) |
+| **Interaction** | | |
+| Clarifying questions | 0-1 (only if ambiguous) | Per-phase approval |
 | Azure resource creation | N/A | Yes |
 
 ## Learn More
