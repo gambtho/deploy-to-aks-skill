@@ -14,19 +14,7 @@ Scan the project root thoroughly. Collect all of the following categories in a s
 
 ### 1.1 Framework Detection
 
-Scan for signal files at the project root (and one level deep for monorepos). Map each signal to a framework and, where possible, a sub-framework:
-
-| Signal File | Framework | Sub-framework Detection |
-|---|---|---|
-| `package.json` | Node.js | Inspect `dependencies` for: **Express** (`express`), **Fastify** (`fastify`), **NestJS** (`@nestjs/core`), **Next.js** (`next`), **Remix** (`@remix-run/node`), **Hono** (`hono`), **Koa** (`koa`) |
-| `requirements.txt` | Python | Scan for: **FastAPI** (`fastapi`), **Django** (`django`), **Flask** (`flask`), **Starlette** (`starlette`), **Gunicorn** (`gunicorn`) |
-| `pyproject.toml` | Python | Parse `[project.dependencies]` or `[tool.poetry.dependencies]` for the same libraries as above |
-| `Pipfile` | Python | Parse `[packages]` section for the same libraries as above |
-| `pom.xml` | Java | Search for `<artifactId>spring-boot-starter-web</artifactId>` → **Spring Boot**; `<artifactId>quarkus-resteasy</artifactId>` → **Quarkus**; `<artifactId>micronaut-http-server-netty</artifactId>` → **Micronaut** |
-| `build.gradle` / `build.gradle.kts` | Java / Kotlin | Search for `org.springframework.boot` → **Spring Boot**; `io.quarkus` → **Quarkus**; `io.micronaut` → **Micronaut** |
-| `go.mod` | Go | Parse `require` block for: `github.com/gin-gonic/gin` → **Gin**; `github.com/labstack/echo` → **Echo**; `github.com/gofiber/fiber` → **Fiber**; `net/http` (stdlib) → **net/http** |
-| `*.csproj` | .NET | Search for `<PackageReference Include="Microsoft.AspNetCore.*"` → **ASP.NET Core**; check `<TargetFramework>` for version (e.g. `net8.0`) |
-| `Cargo.toml` | Rust | Parse `[dependencies]` for: `actix-web` → **Actix**; `axum` → **Axum**; `rocket` → **Rocket**; `warp` → **Warp** |
+Follow the framework detection table in `reference/detection.md`. Scan for signal files at the project root (and one level deep for monorepos). Map each signal to a framework and sub-framework.
 
 **If multiple signal files are found** (e.g. both `package.json` and `requirements.txt`), record all of them — this may indicate a monorepo or polyglot project. Flag for clarification in Step 3.
 
@@ -48,6 +36,10 @@ Look for files and directories that indicate the project already has deployment 
 | `terraform/*.tf` or `*.tf` in root | Terraform IaC exists | Scan for `azurerm_kubernetes_cluster`, `azurerm_container_registry`, and other Azure resources |
 | `skaffold.yaml` | Skaffold dev workflow exists | Record build/deploy configuration |
 | `kustomization.yaml` | Kustomize overlays exist | Record base and overlay structure |
+
+### 1.2a Housekeeping Check
+
+If the project has a `.gitignore`, check whether the agent working directory is excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). If not, add it — these directories contain session-specific data and should never be committed to the repository.
 
 ### 1.3 Environment & Dependency Detection
 
@@ -102,32 +94,9 @@ Scan environment files and source code to detect backing services and Azure SDK 
 
 ### 1.4 Port & Health Endpoint Detection
 
-Determine the application's listen port and any existing health check endpoints.
+Determine the application's listen port and any existing health check endpoints using the detection tables in `reference/detection.md`.
 
-**Port detection** — check these sources in priority order (first match wins):
-
-| Source | What to Look For | Example |
-|---|---|---|
-| `Dockerfile` | `EXPOSE <port>` directive | `EXPOSE 3000` |
-| `.env` / `.env.example` | `PORT=<number>` | `PORT=8080` |
-| `package.json` (`scripts.start`) | `--port <number>` or `-p <number>` | `next start --port 3000` |
-| Source code | `app.listen(<number>)`, `.listen(<number>)`, `server.port=<number>` | `app.listen(3000)` |
-| `application.properties` / `application.yml` (Java) | `server.port=<number>` | `server.port=8080` |
-| `appsettings.json` (.NET) | `"Urls": "http://*:<number>"` | `"Urls": "http://*:5000"` |
-| Framework defaults | Use known defaults if nothing explicit found | Express: 3000, FastAPI: 8000, Spring Boot: 8080, ASP.NET: 5000, Gin: 8080 |
-
-**Health endpoint detection** — grep the entire source tree for route registrations matching these patterns:
-
-| Pattern | Endpoint Type |
-|---|---|
-| `/health` | Generic health check |
-| `/healthz` | Kubernetes-style health check |
-| `/ready`, `/readiness` | Readiness probe |
-| `/liveness` | Liveness probe |
-| `/startup` | Startup probe |
-| `/ping` | Simple ping (sometimes used as health) |
-| `/status` | Status endpoint |
-| `/api/health`, `/api/healthz` | Prefixed health check |
+Follow the **Port Detection** table's priority order (first match wins). Follow the **Health Endpoint Detection** table patterns to grep the source tree for route registrations.
 
 Record the **HTTP method** (GET/HEAD) and **expected response code** (200) for each detected endpoint. If no health endpoints are found, flag this — Phase 2 will generate them.
 

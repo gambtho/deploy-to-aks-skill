@@ -14,31 +14,15 @@ Scan the project and Azure environment. Ask at most one clarifying question (onl
 
 ### Framework Detection
 
-Scan for signal files at the project root (and one level deep for monorepos):
-
-| Signal File | Framework | Sub-framework Detection |
-|---|---|---|
-| `package.json` | Node.js | `express`, `fastify`, `@nestjs/core`, `next`, `@remix-run/node`, `hono`, `koa` |
-| `requirements.txt` / `pyproject.toml` / `Pipfile` | Python | `fastapi`, `django`, `flask`, `starlette` |
-| `pom.xml` / `build.gradle` / `build.gradle.kts` | Java | `spring-boot-starter-web`, `org.springframework.boot`, `quarkus-resteasy` |
-| `go.mod` | Go | `gin-gonic/gin`, `labstack/echo`, `gofiber/fiber` |
-| `*.csproj` | .NET | `Microsoft.AspNetCore.*` |
-| `Cargo.toml` | Rust | `actix-web`, `axum` |
+Follow the framework detection table in `reference/detection.md`. Scan for signal files at the project root (and one level deep for monorepos).
 
 ### Port Detection
 
-Check in priority order (first match wins):
-
-1. `Dockerfile` — `EXPOSE <port>`
-2. `.env` / `.env.example` — `PORT=<number>`
-3. Source code — `app.listen(<number>)`, `server.port=<number>`
-4. Framework defaults — Express: 3000, FastAPI: 8000, Spring Boot: 8080, ASP.NET: 8080, Gin: 8080
+Follow the port detection table in `reference/detection.md` (first match wins).
 
 ### Health Endpoint Detection
 
-Grep source tree for route registrations matching: `/health`, `/healthz`, `/ready`, `/readiness`, `/liveness`, `/startup`, `/ping`, `/api/health`, `/api/healthz`
-
-If none found, use `/health` as default in probes.
+Follow the health endpoint detection table in `reference/detection.md`. If none found, use `/health` as default in probes.
 
 ### Existing Artifact Detection
 
