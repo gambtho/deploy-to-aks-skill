@@ -8,7 +8,6 @@ or SKILL.md — no orphans).
 import re
 from pathlib import Path
 
-
 # Shared path extraction pattern for backtick-quoted paths in markdown
 PATH_PATTERN = re.compile(r"`((?:phases|reference|templates|knowledge-packs|scripts)/[a-zA-Z0-9/_.-]+)`")
 
