@@ -17,7 +17,7 @@ How does **deploy-to-aks** compare to asking GitHub Copilot to deploy an app wit
 | **Non-root container user** | No (runs as root) | Yes (UID 1000) |
 | **.dockerignore** | Missing | Comprehensive |
 | **Namespace isolation** | No | Dedicated namespace |
-| **Service Account** | No | Yes, with Workload Identity |
+| **Service Account** | No | Yes (ServiceAccount provided; Workload Identity requires additional binding/annotation) |
 | **Security context (pod)** | Partial (seccomp only) | Full (7 hardening controls) |
 | **Read-only root filesystem** | No | Yes |
 | **Capabilities dropped** | No | All dropped |
@@ -28,7 +28,7 @@ How does **deploy-to-aks** compare to asking GitHub Copilot to deploy an app wit
 | **Service type** | LoadBalancer (public IP) | ClusterIP + Ingress |
 | **Health probes** | Yes | Yes |
 | **Resource requests/limits** | Yes | Yes |
-| **AKS Safeguards compliance** | 4 of 13 | 13 of 13 |
+| **AKS Safeguards compliance** | 6 of 13 | 13 of 13 |
 
 ---
 
@@ -189,7 +189,7 @@ securityContext:
 
 ### What plain Copilot generated (2 files)
 
-```
+```text
 k8s/
   deployment.yaml
   service.yaml
@@ -197,7 +197,7 @@ k8s/
 
 ### What the skill generated (7 files)
 
-```
+```text
 k8s/
   namespace.yaml          # Workload isolation
   serviceaccount.yaml     # Azure Workload Identity
@@ -310,7 +310,7 @@ AKS [Deployment Safeguards](https://learn.microsoft.com/en-us/azure/aks/deployme
 
 **Plain Copilot: 6 of 13 safeguards pass.** On AKS Automatic, this deployment would be **rejected** by the admission controller.
 
-**Skill: 13 of 13 safeguards pass.** The deployment is fully compliant and would be admitted on any AKS cluster.
+**Skill: 13 of 13 safeguards pass.** The deployment is fully compliant and would be admitted on AKS clusters using AKS Automatic enforcement.
 
 ---
 
