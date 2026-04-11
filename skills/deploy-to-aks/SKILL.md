@@ -66,8 +66,7 @@ If any signal indicates existing infrastructure, offer quick deploy mode:
 
 | Phase | Read | Also load |
 |-------|------|-----------|
-| Quick 1: Scan & Plan | `phases/quick-01-scan-and-plan.md` | `knowledge-packs/frameworks/<detected>.md` (if exists) |
-| Quick 2: Execute | `phases/quick-02-execute.md` | `reference/safeguards.md`, `reference/workload-identity.md`, `templates/mermaid/summary-dashboard.md` |
+| Quick Deploy | `phases/quick-deploy.md` | `knowledge-packs/frameworks/<detected>.md` (if exists), `reference/safeguards.md`, `reference/workload-identity.md` |
 
 ### To provision test infrastructure
 
