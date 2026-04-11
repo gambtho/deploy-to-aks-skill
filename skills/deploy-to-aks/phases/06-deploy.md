@@ -10,7 +10,7 @@ This is the only phase that mutates cloud state. Treat every command with the gr
 
 ## Confirmation Gate Pattern
 
-Every destructive or billable action in this phase MUST use this exact pattern:
+Every destructive or billable action in this phase MUST use this exact pattern — accidental Azure resource creation can incur immediate costs, and premature manifest application can disrupt a running cluster:
 
 ```
 Next I'll [action in plain English]. This will run:
@@ -23,8 +23,8 @@ Want me to proceed? [Yes / No, I'll do it myself]
 ```
 
 Rules:
-- **Never** combine multiple destructive commands into a single gate. One gate per action.
-- **Never** skip a gate because a previous gate was approved. Each gate stands alone.
+- **Never** combine multiple destructive commands into a single gate. One gate per action — combining them prevents the developer from catching a mistake before the next command runs.
+- **Never** skip a gate because a previous gate was approved. Each gate stands alone — earlier approval does not imply consent for later, possibly more expensive actions.
 - If the developer says "No, I'll do it myself," output the command cleanly so they can copy-paste it, then wait for them to confirm the step is complete before continuing.
 - If the developer says "Yes to all" or similar, you may still show what each command does but proceed without waiting.
 
@@ -220,7 +220,7 @@ echo "AKS: $AKS_NAME"
 If the deployment fails:
 - Show the error: `az deployment group show --resource-group <rg> --name main --query properties.error`
 - Common issues: quota limits, name conflicts, region availability
-- See **Rollback Guidance** at the end of this file
+- See **reference/rollback.md** for recovery procedures.
 
 ---
 
@@ -353,7 +353,7 @@ If the rollout times out or fails:
 - Check pod status: `kubectl get pods -l app=myapp`
 - Check events: `kubectl describe pod -l app=myapp`
 - Check logs: `kubectl logs -l app=myapp --tail=50`
-- See **Rollback Guidance** at the end of this file
+- See **reference/rollback.md** for recovery procedures.
 
 ---
 
@@ -379,7 +379,7 @@ Confirm the service exists and has the correct port mapping.
 
 ### 7c: External Endpoint
 
-For **AKS Automatic** (Gateway API):
+For clusters with **Istio Gateway API enabled**:
 
 ```bash
 kubectl get gateway
@@ -388,7 +388,7 @@ kubectl get httproute
 EXTERNAL_IP=$(kubectl get gateway myapp-gateway -o jsonpath='{.status.addresses[0].value}' 2>/dev/null)
 ```
 
-For **AKS Standard** (Ingress):
+For clusters using **Ingress** (default for both AKS Automatic and Standard):
 
 ```bash
 kubectl get ingress
@@ -553,107 +553,7 @@ Do **not** push unless the developer explicitly asks. Mention that the CI/CD pip
 
 ## Rollback Guidance
 
-If any step fails, use the guidance below. Do not proceed to the next step until the failure is resolved or the developer explicitly chooses to abort.
-
-### Bicep Deployment Failed (Step 4)
-
-```bash
-# Check what went wrong
-az deployment group show \
-  --resource-group rg-myapp-dev \
-  --name main \
-  --query properties.error \
-  --output json
-
-# Cancel an in-progress deployment
-az deployment group cancel \
-  --resource-group rg-myapp-dev \
-  --name main
-
-# Common fixes:
-# - Name conflict     → change appName parameter, redeploy
-# - Quota exceeded    → request quota increase or change VM size / region
-# - Region not available → change location parameter
-# - Validation error  → fix the Bicep template, redeploy
-
-# Fix and retry (idempotent — safe to re-run):
-az deployment group create \
-  --resource-group rg-myapp-dev \
-  --template-file infra/main.bicep \
-  --parameters appName=myapp ...
-```
-
-### Image Build Failed (Step 5)
-
-```bash
-# No cloud resources were persisted — nothing to roll back.
-# Fix the issue and retry:
-
-# Common fixes:
-# - Dockerfile syntax error       → edit Dockerfile
-# - Missing file in build context → check .dockerignore
-# - Dependency install failure    → fix package.json / requirements.txt / go.mod
-
-# Retry:
-az acr build --registry <acr-name> --image <app-name>:<git-sha> .
-```
-
-### kubectl apply Failed (Step 6b)
-
-```bash
-# Remove the partially applied resources:
-kubectl delete -f k8s/
-
-# Common fixes:
-# - YAML syntax error      → validate with: kubectl apply -f k8s/ --dry-run=client
-# - Invalid resource field  → check API version matches cluster version
-# - Image pull error        → verify ACR name in deployment.yaml matches actual ACR
-# - Namespace doesn't exist → create it first or remove namespace from manifests
-
-# Fix and retry:
-kubectl apply -f k8s/
-```
-
-### Pods Not Starting (Step 6c / Step 7)
-
-```bash
-# Diagnose:
-kubectl get pods -l app=myapp
-kubectl describe pod -l app=myapp
-kubectl logs -l app=myapp --tail=50
-
-# Common error patterns:
-
-# CrashLoopBackOff — app crashes on startup
-#   → Check logs for the crash reason
-#   → Usually: missing env var, bad database connection string, port mismatch
-
-# ImagePullBackOff — can't pull the container image
-#   → Verify image name: kubectl get deployment myapp -o jsonpath='{.spec.template.spec.containers[0].image}'
-#   → Verify ACR access: az aks check-acr --resource-group <rg> --name <aks> --acr <acr>.azurecr.io
-
-# Pending — pod can't be scheduled
-#   → Check node status: kubectl get nodes
-#   → Check resource requests vs available capacity: kubectl describe nodes
-
-# OOMKilled — app exceeded memory limit
-#   → Increase memory limit in k8s/deployment.yaml and re-apply
-
-# After fixing, re-apply:
-kubectl apply -f k8s/
-kubectl rollout status deployment/myapp --timeout=300s
-```
-
-### Nuclear Option: Tear Everything Down
-
-If the developer wants to start over completely:
-
-```bash
-# This deletes ALL resources in the resource group — irreversible.
-az group delete --name rg-myapp-dev --yes --no-wait
-```
-
-This is itself a destructive command. If the developer asks to tear down, use a confirmation gate for it.
+If any step fails, consult `reference/rollback.md` for recovery procedures. Do not proceed to the next step until the failure is resolved or the developer explicitly chooses to abort.
 
 ---
 

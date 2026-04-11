@@ -45,18 +45,23 @@ file, briefly explain what was generated and why.
    (reference: `templates/k8s/deployment.yaml`)
 4. `k8s/service.yaml` — ClusterIP Service
    (reference: `templates/k8s/service.yaml`)
-5. `k8s/gateway.yaml` — Gateway resource (AKS Automatic clusters)
-   OR `k8s/ingress.yaml` — Ingress resource (AKS Standard clusters)
-   (reference: `templates/k8s/gateway.yaml`, `templates/k8s/httproute.yaml`,
-   or `templates/k8s/ingress.yaml`)
-6. `k8s/httproute.yaml` — HTTPRoute (only if Gateway was generated)
-7. `k8s/hpa.yaml` — HorizontalPodAutoscaler
+5. **If Istio Gateway API is enabled:**
+   - `k8s/gateway.yaml` — Gateway resource (reference: `templates/k8s/gateway.yaml`)
+   - `k8s/httproute.yaml` — HTTPRoute for traffic routing (reference: `templates/k8s/httproute.yaml`)
+
+   **Otherwise (default for both AKS Automatic and Standard):**
+   - `k8s/ingress.yaml` — Ingress resource with Web App Routing (reference: `templates/k8s/ingress.yaml`)
+6. `k8s/hpa.yaml` — HorizontalPodAutoscaler
    (reference: `templates/k8s/hpa.yaml`)
-8. `k8s/pdb.yaml` — PodDisruptionBudget
+7. `k8s/pdb.yaml` — PodDisruptionBudget
    (reference: `templates/k8s/pdb.yaml`)
-9. `k8s/configmap.yaml` — ConfigMap for non-secret configuration (if the app requires
+8. `k8s/configmap.yaml` — ConfigMap for non-secret configuration (if the app requires
    environment-specific config values)
    (reference: `templates/k8s/configmap.yaml`)
+
+### Knowledge pack check
+
+Before generating manifests, check if a knowledge pack was loaded in Phase 1 (`knowledge-packs/frameworks/<framework>.md`). If one exists, read its **probe settings**, **writable path requirements**, **env var patterns**, and **ConfigMap structure** sections. Apply these when customizing templates — for example, the pack may specify non-standard liveness probe paths, directories that need writable volume mounts, or environment variables that should come from a ConfigMap rather than being hardcoded.
 
 ### Template usage
 
@@ -201,10 +206,10 @@ k8s/
 ├── serviceaccount.yaml
 ├── deployment.yaml
 ├── service.yaml
-├── gateway.yaml            (AKS Automatic)
+├── gateway.yaml            (if Istio Gateway API enabled)
 │   └── httproute.yaml
 │   OR
-├── ingress.yaml            (AKS Standard)
+├── ingress.yaml            (default — both AKS Automatic and Standard)
 ├── hpa.yaml
 └── pdb.yaml
 

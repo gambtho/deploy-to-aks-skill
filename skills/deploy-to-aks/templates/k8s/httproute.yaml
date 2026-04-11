@@ -2,7 +2,7 @@
 # Gateway API — HTTPRoute Template — AKS Deploy Skill
 # =============================================================================
 # Routes HTTP traffic from a Gateway to a backend Service.
-# Use this together with gateway.yaml on AKS Automatic clusters.
+# Use this together with gateway.yaml on clusters with Istio Gateway API enabled.
 #
 # REPLACE: <app-name>      — your application name (e.g., order-api)
 # REPLACE: <namespace>     — target namespace (e.g., production)

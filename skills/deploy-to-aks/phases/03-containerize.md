@@ -6,6 +6,12 @@ Ensure the project has a **production-ready Dockerfile** and `.dockerignore` tha
 
 ---
 
+## Step 0 — Housekeeping: Update .gitignore
+
+If Phase 1 flagged missing `.gitignore` entries for agent working directories (e.g., `.claude/`, `.superpowers/`, `.opencode/`), offer to add them now before generating any new files. Wait for user approval before modifying `.gitignore`.
+
+---
+
 ## Step 1 — Check for an Existing Dockerfile
 
 Search the repository root for `Dockerfile`, `Dockerfile.*`, or `*.Dockerfile`.
@@ -38,6 +44,10 @@ Every production Dockerfile MUST satisfy these requirements. Each item explains 
 ---
 
 ## Step 2 — Generate or Improve the Dockerfile
+
+### Knowledge pack check
+
+Before selecting a template, check if a knowledge pack was loaded in Phase 1 (`knowledge-packs/frameworks/<framework>.md`). If one exists, read its **Dockerfile patterns** and **health endpoint configuration** sections first — prefer the pack's framework-specific guidance over the generic template. The pack may specify a different base image, build command, or health check approach that is more appropriate for the framework.
 
 ### Template selection
 

@@ -1,6 +1,6 @@
 """Quick deploy mode structural tests.
 
-Validates that quick phase files, prerequisites script, and SKILL.md
+Validates that the quick deploy phase file, prerequisites script, and SKILL.md
 routing are internally consistent and properly cross-referenced.
 """
 
@@ -8,47 +8,37 @@ import re
 import subprocess
 from pathlib import Path
 
-
 # --- Phase file existence and naming ---
 
 
-def test_quick_phase_files_exist(skill_root: Path):
-    """Both quick phase files exist in phases/."""
+def test_quick_phase_file_exists(skill_root: Path):
+    """Quick deploy phase file exists in phases/."""
     phases_dir = skill_root / "phases"
-    assert (phases_dir / "quick-01-scan-and-plan.md").is_file(), (
-        f"Missing quick phase file: {phases_dir}/quick-01-scan-and-plan.md"
-    )
-    assert (phases_dir / "quick-02-execute.md").is_file(), f"Missing quick phase file: {phases_dir}/quick-02-execute.md"
+    assert (phases_dir / "quick-deploy.md").is_file(), f"Missing quick phase file: {phases_dir}/quick-deploy.md"
 
 
 def test_quick_phase_naming_convention(skill_root: Path):
-    """Quick phase files follow quick-NN-<name>.md pattern."""
+    """Exactly one quick phase file exists matching quick-*.md pattern."""
     phases_dir = skill_root / "phases"
     quick_files = [f for f in phases_dir.iterdir() if f.name.startswith("quick-")]
-    assert len(quick_files) == 2, f"Expected 2 quick phase files, found {len(quick_files)}"
-    pattern = re.compile(r"^quick-\d{2}-[a-z-]+\.md$")
-    for f in quick_files:
-        assert pattern.match(f.name), f"Quick phase file '{f.name}' doesn't match naming pattern"
+    assert len(quick_files) == 1, (
+        f"Expected 1 quick phase file, found {len(quick_files)}: {[f.name for f in quick_files]}"
+    )
+    assert quick_files[0].name == "quick-deploy.md"
 
 
-def test_quick_phase_titles(skill_root: Path):
-    """Each quick phase file has a # title matching its purpose."""
-    phases_dir = skill_root / "phases"
-    checks = {
-        "quick-01-scan-and-plan.md": r"^# Quick Phase 1:",
-        "quick-02-execute.md": r"^# Quick Phase 2:",
-    }
-    for filename, pattern in checks.items():
-        content = (phases_dir / filename).read_text()
-        assert re.search(pattern, content, re.MULTILINE), f"{filename} missing expected title matching '{pattern}'"
+def test_quick_phase_title(skill_root: Path):
+    """Quick deploy phase file has a # title."""
+    content = (skill_root / "phases" / "quick-deploy.md").read_text()
+    assert re.search(r"^# Quick Deploy", content, re.MULTILINE), (
+        "quick-deploy.md missing expected title '# Quick Deploy'"
+    )
 
 
-def test_quick_phase_goal_sections(skill_root: Path):
-    """Each quick phase file has a ## Goal section."""
-    phases_dir = skill_root / "phases"
-    for filename in ["quick-01-scan-and-plan.md", "quick-02-execute.md"]:
-        content = (phases_dir / filename).read_text()
-        assert re.search(r"^## Goal", content, re.MULTILINE), f"{filename} missing '## Goal' section"
+def test_quick_phase_goal_section(skill_root: Path):
+    """Quick deploy phase file has a ## Goal section."""
+    content = (skill_root / "phases" / "quick-deploy.md").read_text()
+    assert re.search(r"^## Goal", content, re.MULTILINE), "quick-deploy.md missing '## Goal' section"
 
 
 # --- SKILL.md routing ---
@@ -58,46 +48,54 @@ def test_skill_md_quick_mode_routing(skill_root: Path):
     """SKILL.md contains quick mode detection block and phase table."""
     skill_md = (skill_root / "SKILL.md").read_text()
     assert "Quick Deploy Mode" in skill_md, "SKILL.md missing 'Quick Deploy Mode' section"
-    assert "quick-01-scan-and-plan.md" in skill_md, "SKILL.md missing reference to quick-01-scan-and-plan.md"
-    assert "quick-02-execute.md" in skill_md, "SKILL.md missing reference to quick-02-execute.md"
+    assert "quick-deploy.md" in skill_md, "SKILL.md missing reference to quick-deploy.md"
 
 
 # --- Cross-references ---
 
 
 def test_quick_mode_cross_references(skill_root: Path, repo_root: Path):
-    """All file paths referenced in quick phase files exist on disk."""
-    phases_dir = skill_root / "phases"
+    """All file paths referenced in quick-deploy.md exist on disk."""
+    content = (skill_root / "phases" / "quick-deploy.md").read_text()
     path_pattern = re.compile(r"`((?:templates|reference|knowledge-packs|scripts)/[a-zA-Z0-9/_.-]+)`")
-    for filename in ["quick-01-scan-and-plan.md", "quick-02-execute.md"]:
-        content = (phases_dir / filename).read_text()
-        paths = path_pattern.findall(content)
-        for rel_path in paths:
-            # Skip pattern paths like <detected>.md
-            if "<" in rel_path:
-                continue
-            # Scripts are under repo root, everything else under skill_root
-            if rel_path.startswith("scripts/"):
-                full_path = repo_root / rel_path
-            else:
-                full_path = skill_root / rel_path
-            assert full_path.exists(), f"{filename} references '{rel_path}' but it doesn't exist"
+    paths = path_pattern.findall(content)
+    for rel_path in paths:
+        if "<" in rel_path:
+            continue
+        if rel_path.startswith("scripts/"):
+            full_path = repo_root / rel_path
+        else:
+            full_path = skill_root / rel_path
+        assert full_path.exists(), f"quick-deploy.md references '{rel_path}' but it doesn't exist"
 
 
 def test_quick_mode_no_bicep_references(skill_root: Path):
-    """Quick phase files do not reference any templates/bicep/ files."""
-    phases_dir = skill_root / "phases"
-    for filename in ["quick-01-scan-and-plan.md", "quick-02-execute.md"]:
-        content = (phases_dir / filename).read_text()
-        assert "templates/bicep/" not in content, f"{filename} should not reference Bicep templates"
+    """Quick deploy phase file does not reference any templates/bicep/ files."""
+    content = (skill_root / "phases" / "quick-deploy.md").read_text()
+    assert "templates/bicep/" not in content, "quick-deploy.md should not reference Bicep templates"
 
 
 def test_quick_mode_no_github_actions_references(skill_root: Path):
-    """Quick phase files do not reference templates/github-actions/."""
-    phases_dir = skill_root / "phases"
-    for filename in ["quick-01-scan-and-plan.md", "quick-02-execute.md"]:
-        content = (phases_dir / filename).read_text()
-        assert "templates/github-actions/" not in content, f"{filename} should not reference GitHub Actions templates"
+    """Quick deploy phase file does not reference templates/github-actions/."""
+    content = (skill_root / "phases" / "quick-deploy.md").read_text()
+    assert "templates/github-actions/" not in content, "quick-deploy.md should not reference GitHub Actions templates"
+
+
+# --- No presentation choreography ---
+
+
+def test_quick_mode_no_presentation_choreography(skill_root: Path):
+    """Quick deploy phase file contains no presentation choreography."""
+    content = (skill_root / "phases" / "quick-deploy.md").read_text()
+    banned_patterns = [
+        ("progress indicators", r"[◻▸✓✗]"),
+        ("celebration banner", r"celebration|🎉"),
+        ("permission glob strategy", r"permission.*glob|glob.*permission"),
+        ("narration suppression", r"DO NOT narrate|do not narrate"),
+        ("output suppression", r"suppress.*output|output.*suppress"),
+    ]
+    for name, pattern in banned_patterns:
+        assert not re.search(pattern, content, re.IGNORECASE), f"quick-deploy.md contains {name} (pattern: {pattern})"
 
 
 # --- Prerequisites script ---
