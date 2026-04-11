@@ -1,8 +1,9 @@
 # =============================================================================
 # Kubernetes Ingress Template — AKS Deploy Skill
 # =============================================================================
-# Use this template for AKS Standard clusters with the Web App Routing add-on.
-# For AKS Automatic clusters, use gateway.yaml + httproute.yaml instead.
+# Use this template for AKS clusters with the Web App Routing add-on (NGINX).
+# This is the default for both AKS Automatic and AKS Standard.
+# For clusters with Istio Gateway API enabled, use gateway.yaml + httproute.yaml instead.
 #
 # REPLACE: <app-name>    — your application name (e.g., order-api)
 # REPLACE: <namespace>   — target namespace (e.g., production)

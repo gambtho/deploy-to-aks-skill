@@ -118,7 +118,7 @@ Use terminal-native question prompts (not visual cards) when the developer faces
 
 - ONE concept per turn -- never overload the developer
 - Progressive discovery -- ask incrementally, confirm as you go
-- Sensible defaults -- AKS Automatic, Gateway API, Workload Identity, 2 replicas
+- Sensible defaults -- AKS Automatic, Ingress (Web App Routing), Workload Identity, 2 replicas
 - No Kubernetes jargon until Phase 4 -- frame AKS as a "scalable app platform"
 
 ## Housekeeping

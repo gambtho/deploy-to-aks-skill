@@ -1,6 +1,6 @@
 # AKS Automatic Reference
 
-> **Last updated:** 2026-04-02
+> **Last updated:** 2026-04-10
 
 ## What is AKS Automatic
 
@@ -14,17 +14,56 @@ AKS Automatic is a fully managed Kubernetes experience where Azure handles node 
 | SKU tier | `Standard` |
 | API version | `2025-03-01` |
 
-## Gateway API (NOT Ingress)
+## Routing: Ingress (Default) or Gateway API (Optional)
 
-AKS Automatic uses the **Kubernetes Gateway API** for traffic routing, NOT the traditional `Ingress` resource. The Gateway API is built in via an Istio-based service mesh that ships with the cluster.
+AKS Automatic uses the **Web App Routing addon (NGINX)** by default — the same as AKS Standard. The Kubernetes Gateway API with Istio is available as an **optional mode** that must be explicitly enabled.
 
-### How Gateway API differs from Ingress
+### Detecting the Active Routing Mode
+
+```bash
+az aks show -g <rg> -n <cluster> --query 'ingressProfile.webAppRouting' -o json
+```
+
+Check `gatewayApiImplementations.appRoutingIstio.mode`:
+- `"Enabled"` → Gateway API with Istio is active → use `Gateway` + `HTTPRoute` resources with `gatewayClassName: istio`
+- `"Disabled"` (default) → NGINX Ingress is active → use `Ingress` resources with `ingressClassName: webapprouting.kubernetes.azure.com`
+
+### Default: Ingress (NGINX via Web App Routing)
+
+When Istio is not enabled (the default), AKS Automatic behaves identically to AKS Standard for routing:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: app-namespace
+spec:
+  ingressClassName: webapprouting.kubernetes.azure.com
+  rules:
+    - host: myapp.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-service
+                port:
+                  number: 8080
+```
+
+### Optional: Gateway API (Istio)
+
+When `appRoutingIstio.mode` is `"Enabled"`, the cluster has an Istio-based service mesh that provides Gateway API support.
+
+#### How Gateway API differs from Ingress
 
 - `Ingress` is a single resource that combines listener config and routing rules. Gateway API splits these into separate resources: `Gateway` (ports, TLS, listeners) and `HTTPRoute` (path matching, backend refs).
 - Gateway API supports more advanced traffic patterns (header-based routing, traffic splitting, cross-namespace references) without annotations or custom CRDs.
-- The `gatewayClassName` for AKS Automatic is `istio`.
+- The `gatewayClassName` for AKS with Istio enabled is `istio`.
 
-### Gateway and HTTPRoute YAML
+### Gateway and HTTPRoute YAML (only when Istio is enabled)
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
@@ -89,7 +128,7 @@ spec:
 **Key points:**
 - `parentRefs` links the HTTPRoute to a specific Gateway and listener.
 - Multiple HTTPRoutes can reference the same Gateway.
-- Do NOT create `Ingress` resources — AKS Automatic does not use an ingress controller in the traditional sense.
+- Only use `Gateway`/`HTTPRoute` resources when Istio Gateway API is enabled. If Istio is disabled (the default), use `Ingress` resources with `ingressClassName: webapprouting.kubernetes.azure.com`.
 
 ## Node Management
 
@@ -145,7 +184,7 @@ You do need to ensure the Log Analytics Workspace and Azure Monitor Workspace re
 - **Kubernetes upgrades:** Rolled out automatically.
 - **Network plugins:** Azure CNI Overlay with Cilium is configured automatically.
 - **kube-proxy configuration:** Cilium replaces kube-proxy; no iptables tuning needed.
-- **Ingress controller installation:** Gateway API via Istio is built in.
+- **Ingress controller installation:** Web App Routing (NGINX) is built in. Gateway API via Istio is optionally available.
 
 ## Bicep Configuration
 
@@ -213,7 +252,7 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2025-03-01' = {
 - `agentPoolProfiles` must have a system pool, but you do NOT define user pools. NAP handles all workload node provisioning.
 - No `vmSize` is specified in the pool — Automatic selects it.
 - No `networkProfile` block is needed — networking is fully managed.
-- No ingress addon configuration — Gateway API via Istio is included automatically.
+- No ingress addon configuration needed — Web App Routing (NGINX) is included by default. Gateway API via Istio can be enabled optionally.
 - `nodeResourceGroupProfile.restrictionLevel: 'ReadOnly'` prevents manual modification of the managed node resource group.
 
 ## Limitations
@@ -222,5 +261,5 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2025-03-01' = {
 - **No Windows containers.** As of 2025, AKS Automatic only supports Linux node pools.
 - **Limited addon flexibility.** You cannot install arbitrary addons that require node-level configuration (e.g., custom CSI drivers, specific CNI plugins).
 - **No GPU nodes.** NAP does not currently auto-provision GPU-equipped VMs in Automatic SKU.
-- **No Ingress resource support.** You must use Gateway API (`Gateway` + `HTTPRoute`). Traditional `Ingress` resources are ignored.
+- **No Ingress resource support when Istio is enabled.** If Istio Gateway API is enabled, you must use `Gateway` + `HTTPRoute`. If Istio is disabled (the default), use standard `Ingress` resources with `ingressClassName: webapprouting.kubernetes.azure.com`.
 - **Deployment Safeguards cannot be disabled.** If your existing manifests are non-compliant, you must fix them before deploying.

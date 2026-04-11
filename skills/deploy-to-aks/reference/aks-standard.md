@@ -1,6 +1,6 @@
 # AKS Standard Reference
 
-> **Last updated:** 2026-04-02
+> **Last updated:** 2026-04-10
 
 ## What is AKS Standard
 
@@ -11,7 +11,7 @@ AKS Standard is the traditional managed Kubernetes offering on Azure where you r
 | Aspect | Automatic | Standard |
 |--------|-----------|----------|
 | Node pools | Fully managed by NAP, no user pools | User-defined system + user pools with explicit VM SKU |
-| Ingress | Gateway API via built-in Istio | NGINX (web app routing addon) or BYO controller via `Ingress` |
+| Ingress | NGINX (web app routing addon) by default; Gateway API via Istio optionally | NGINX (web app routing addon) or BYO controller via `Ingress` |
 | VM SKU selection | Azure picks automatically | You specify per node pool |
 | K8s upgrades | Automatic | Manual or scheduled maintenance windows |
 | OS patching | Automatic | Node image upgrades (manual, scheduled, or unattended) |
@@ -102,7 +102,7 @@ ingressProfile: {
 
 ### Ingress Resource YAML
 
-Use the standard `Ingress` resource (NOT `Gateway` / `HTTPRoute` — those are for AKS Automatic with Istio):
+Use the standard `Ingress` resource. Gateway API (`Gateway` / `HTTPRoute`) is only available when Istio is explicitly enabled via `appRoutingIstio.mode: Enabled` — this applies to both AKS Standard and Automatic.
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -363,7 +363,7 @@ resource cluster 'Microsoft.ContainerService/managedClusters@2025-03-01' = {
 | `sku.name` | `'Base'` | `'Automatic'` |
 | `agentPoolProfiles` | Explicit system + user pools with `vmSize` | Single system pool, no `vmSize`, NAP handles the rest |
 | `networkProfile` | Required — you configure CNI, policy, CIDRs | Not needed — fully managed |
-| `ingressProfile.webAppRouting` | Enabled for NGINX ingress | Not used — Gateway API via Istio is built in |
+| `ingressProfile.webAppRouting` | Enabled for NGINX ingress | Enabled for NGINX ingress (same as Standard); Gateway API via Istio optionally available |
 | `safeguardsProfile` | Optional, defaults to `Off` | Always active, cannot be disabled |
 | `nodeResourceGroupProfile` | Optional | `restrictionLevel: 'ReadOnly'` enforced |
 

@@ -1,10 +1,10 @@
 # =============================================================================
 # Gateway API — Gateway Resource Template — AKS Deploy Skill
 # =============================================================================
-# Use this template for AKS Automatic clusters, which support Gateway API
-# with the Istio-based gateway controller out of the box.
+# Use this template for AKS clusters with Istio Gateway API enabled
+# (appRoutingIstio.mode: Enabled). This applies to both AKS Automatic and Standard.
 #
-# For AKS Standard clusters, use ingress.yaml instead.
+# For clusters using the default NGINX-based Web App Routing, use ingress.yaml instead.
 #
 # REPLACE: <gateway-name> — name for the gateway (e.g., app-gateway)
 # REPLACE: <namespace>    — target namespace (e.g., production)

@@ -73,7 +73,7 @@ Substitute every placeholder with actual values derived from Phase 1 discovery a
 | `{{RESOURCE_GROUP}}` | Derived: `rg-{app-name}` | `rg-contoso-api` |
 | `{{NAMESPACE}}` | Kubernetes namespace for the app | `contoso-api` |
 | `{{BACKING_SERVICES}}` | Comma-separated list of Azure backing services | `PostgreSQL, Redis, Key Vault` |
-| `{{INGRESS_TYPE}}` | `Gateway API` for Automatic, `Ingress Controller` for Standard | `Gateway API` |
+| `{{INGRESS_TYPE}}` | `Gateway API` if Istio enabled, `Ingress Controller` otherwise (default) | `Ingress Controller` |
 | `{{ENVIRONMENT}}` | `dev` or `production` | `dev` |
 
 ### 2c: Diagram Topology Requirements
@@ -81,7 +81,7 @@ Substitute every placeholder with actual values derived from Phase 1 discovery a
 The generated diagram **must** show:
 
 1. **External users** on the left, with an arrow into the cluster boundary.
-2. **Ingress layer** — labeled "Gateway API" (Automatic) or "Ingress Controller / Load Balancer" (Standard) — as the entry point inside the cluster boundary.
+2. **Ingress layer** — labeled "Gateway API" (if Istio enabled) or "Ingress Controller / Load Balancer" (default for both flavors) — as the entry point inside the cluster boundary.
 3. **AKS cluster boundary** — a visible box labeled with the cluster name and AKS type containing:
    - The ingress layer.
    - One or more **Deployment** boxes (one per container/service discovered in Phase 1).
@@ -175,7 +175,7 @@ If the developer requests changes:
 4. **Re-present** — repeat Step 4.
 
 Common change requests:
-- "Switch to AKS Standard" → update AKS type, change ingress to Ingress Controller, adjust control plane cost.
+- "Switch to AKS Standard" → update AKS type, adjust control plane cost. Ingress type stays the same unless Istio mode changes.
 - "Drop Redis" → remove from services, diagram, and cost.
 - "Add blob storage" → add Storage Account to services, diagram, and cost.
 - "Use production tiers" → upgrade all tiers, recompute costs.

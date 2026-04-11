@@ -45,8 +45,8 @@ file, briefly explain what was generated and why.
    (reference: `templates/k8s/deployment.yaml`)
 4. `k8s/service.yaml` — ClusterIP Service
    (reference: `templates/k8s/service.yaml`)
-5. `k8s/gateway.yaml` — Gateway resource (AKS Automatic clusters)
-   OR `k8s/ingress.yaml` — Ingress resource (AKS Standard clusters)
+5. `k8s/gateway.yaml` — Gateway resource (only if Istio Gateway API is enabled)
+   OR `k8s/ingress.yaml` — Ingress resource (default for both AKS Automatic and Standard)
    (reference: `templates/k8s/gateway.yaml`, `templates/k8s/httproute.yaml`,
    or `templates/k8s/ingress.yaml`)
 6. `k8s/httproute.yaml` — HTTPRoute (only if Gateway was generated)
@@ -201,10 +201,10 @@ k8s/
 ├── serviceaccount.yaml
 ├── deployment.yaml
 ├── service.yaml
-├── gateway.yaml            (AKS Automatic)
+├── gateway.yaml            (if Istio Gateway API enabled)
 │   └── httproute.yaml
 │   OR
-├── ingress.yaml            (AKS Standard)
+├── ingress.yaml            (default — both AKS Automatic and Standard)
 ├── hpa.yaml
 └── pdb.yaml
 

@@ -56,18 +56,25 @@ Extract from cluster details:
 - **OIDC issuer**: `oidcIssuerProfile.issuerUrl`
 - **Azure RBAC**: `aadProfile.enableAzureRBAC`
 
+### Routing Detection
+
+Determine whether the cluster uses Gateway API or Ingress — this applies to **both** AKS Automatic and Standard:
+
+```bash
+az aks show -g <rg> -n <cluster> --query 'ingressProfile.webAppRouting' -o json
+```
+
+- If `gatewayApiImplementations.appRoutingIstio.mode` is `"Enabled"` → use **Gateway API** (`gateway.yaml` + `httproute.yaml`, `gatewayClassName: istio`)
+- Otherwise → use **Ingress** (`ingress.yaml`, `ingressClassName: webapprouting.kubernetes.azure.com`)
+
+> **Note:** AKS Automatic defaults to NGINX/Ingress (same as Standard). Gateway API via Istio is an optional mode on both flavors.
+
+If `ingressProfile.webAppRouting.enabled` is not `true`, stop with error and provide the enable command: `az aks approuting enable -g <rg> -n <cluster>`
+
 ```bash
 az acr list -g <rg> -o json
 az identity list -g <rg> -o json
 ```
-
-**AKS Standard only** — verify Web App Routing addon:
-
-```bash
-az aks show -g <rg> -n <cluster> --query 'ingressProfile.webAppRouting.enabled' -o tsv
-```
-
-If not `true`, stop with error and provide the enable command: `az aks approuting enable -g <rg> -n <cluster>`
 
 **RBAC check** — if Azure RBAC is enabled:
 
@@ -120,9 +127,9 @@ Generate from `templates/k8s/` templates. Replace `<angle-bracket>` placeholders
 | `k8s/serviceaccount.yaml` | `templates/k8s/serviceaccount.yaml` | Workload Identity annotation |
 | `k8s/deployment.yaml` | `templates/k8s/deployment.yaml` | Image placeholder resolved at deploy time |
 | `k8s/service.yaml` | `templates/k8s/service.yaml` | |
-| `k8s/gateway.yaml` | `templates/k8s/gateway.yaml` | AKS Automatic only |
-| `k8s/httproute.yaml` | `templates/k8s/httproute.yaml` | AKS Automatic only |
-| `k8s/ingress.yaml` | `templates/k8s/ingress.yaml` | AKS Standard only |
+| `k8s/gateway.yaml` | `templates/k8s/gateway.yaml` | Only if Istio Gateway API detected |
+| `k8s/httproute.yaml` | `templates/k8s/httproute.yaml` | Only if Istio Gateway API detected |
+| `k8s/ingress.yaml` | `templates/k8s/ingress.yaml` | Only if using Ingress (default for both flavors) |
 | `k8s/hpa.yaml` | `templates/k8s/hpa.yaml` | min: 2, max: 10 |
 | `k8s/pdb.yaml` | `templates/k8s/pdb.yaml` | minAvailable: 1 |
 | `k8s/configmap.yaml` | `templates/k8s/configmap.yaml` | Only if app needs environment-specific config |
@@ -156,7 +163,7 @@ az aks show -g <rg> -n <cluster> --query 'safeguardsProfile.level' -o tsv
 az aks get-credentials -g <resource_group> -n <aks_cluster_name> --overwrite-existing
 ```
 
-### Verify Gateway API CRDs (AKS Automatic only)
+### Verify Gateway API CRDs (only if Istio Gateway API detected)
 
 ```bash
 kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io 2>/dev/null
@@ -193,8 +200,8 @@ If any step fails, show the error and stop.
 
 ```bash
 kubectl get pods -n <namespace> -l app=<app-name>
-kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}'  # AKS Automatic
-kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'  # AKS Standard
+kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}'  # if Gateway API
+kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'  # if Ingress
 ```
 
 Wait up to 3 minutes for external IP. Once available, curl the health endpoint.

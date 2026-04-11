@@ -379,7 +379,7 @@ Confirm the service exists and has the correct port mapping.
 
 ### 7c: External Endpoint
 
-For **AKS Automatic** (Gateway API):
+For clusters with **Istio Gateway API enabled**:
 
 ```bash
 kubectl get gateway
@@ -388,7 +388,7 @@ kubectl get httproute
 EXTERNAL_IP=$(kubectl get gateway myapp-gateway -o jsonpath='{.status.addresses[0].value}' 2>/dev/null)
 ```
 
-For **AKS Standard** (Ingress):
+For clusters using **Ingress** (default for both AKS Automatic and Standard):
 
 ```bash
 kubectl get ingress
