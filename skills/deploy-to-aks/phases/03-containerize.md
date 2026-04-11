@@ -6,6 +6,12 @@ Ensure the project has a **production-ready Dockerfile** and `.dockerignore` tha
 
 ---
 
+## Step 0 — Housekeeping: Update .gitignore
+
+If Phase 1 flagged missing `.gitignore` entries for agent working directories (e.g., `.claude/`, `.superpowers/`, `.opencode/`), offer to add them now before generating any new files. Wait for user approval before modifying `.gitignore`.
+
+---
+
 ## Step 1 — Check for an Existing Dockerfile
 
 Search the repository root for `Dockerfile`, `Dockerfile.*`, or `*.Dockerfile`.

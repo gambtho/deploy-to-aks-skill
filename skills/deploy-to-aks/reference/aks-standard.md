@@ -83,9 +83,9 @@ agentPoolProfiles: [
 
 ## Ingress
 
-### Recommended: Web Application Routing Addon (NGINX-based)
+### Recommended: Web Application Routing Addon
 
-The simplest path for ingress on AKS Standard is the **web application routing addon**. It deploys a managed NGINX ingress controller.
+The simplest path for ingress on AKS Standard is the **web application routing addon** (`ingressClassName: webapprouting.kubernetes.azure.com`). It deploys a managed ingress controller.
 
 Enable it in Bicep:
 

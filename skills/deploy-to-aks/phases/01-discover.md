@@ -39,7 +39,7 @@ Look for files and directories that indicate the project already has deployment 
 
 ### 1.2a Housekeeping Check
 
-If the project has a `.gitignore`, check whether the agent working directory is excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). If not, add it — these directories contain session-specific data and should never be committed to the repository.
+If the project has a `.gitignore`, check whether agent working directories are excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). **Do not modify `.gitignore` during discovery** — record any missing entries and include them in the Phase 1 output. The agent will offer to add them when generating files in Phase 3.
 
 ### 1.3 Environment & Dependency Detection
 
@@ -249,6 +249,7 @@ By the end of Phase 1, the following data points **must** be known (either auto-
 | `azure_sdk_usage[]` | Auto-detected from source imports | No (informational) |
 | `monorepo` | Auto-detected | Yes (boolean; if true, `deploy_target` path is also required) |
 | `deploy_target` | Asked if monorepo | Conditional |
+| `gitignore_missing[]` | Auto-detected from `.gitignore` scan | No (agent dirs needing exclusion) |
 
 Once all required data points are collected, write them to the project profile and announce:
 

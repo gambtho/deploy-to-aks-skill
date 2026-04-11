@@ -203,7 +203,7 @@ k8s/
   serviceaccount.yaml     # Azure Workload Identity
   deployment.yaml         # Full security context
   service.yaml            # ClusterIP (internal)
-  ingress.yaml            # External access via managed NGINX
+  ingress.yaml            # External access via Azure Web App Routing
   hpa.yaml                # Autoscaling (2-10 replicas)
   pdb.yaml                # Disruption budget
 ```

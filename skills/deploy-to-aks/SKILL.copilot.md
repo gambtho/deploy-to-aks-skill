@@ -344,7 +344,7 @@ Look for files and directories that indicate the project already has deployment 
 
 ### 1.2a Housekeeping Check
 
-If the project has a `.gitignore`, check whether the agent working directory is excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). If not, add it — these directories contain session-specific data and should never be committed to the repository.
+If the project has a `.gitignore`, check whether agent working directories are excluded (e.g., `.claude/`, `.superpowers/`, `.opencode/`). **Do not modify `.gitignore` during discovery** — record any missing entries and include them in the Phase 1 output. The agent will offer to add them when generating files in Phase 3.
 
 ### 1.3 Environment & Dependency Detection
 
@@ -554,6 +554,7 @@ By the end of Phase 1, the following data points **must** be known (either auto-
 | `azure_sdk_usage[]` | Auto-detected from source imports | No (informational) |
 | `monorepo` | Auto-detected | Yes (boolean; if true, `deploy_target` path is also required) |
 | `deploy_target` | Asked if monorepo | Conditional |
+| `gitignore_missing[]` | Auto-detected from `.gitignore` scan | No (agent dirs needing exclusion) |
 
 Once all required data points are collected, write them to the project profile and announce:
 
@@ -786,6 +787,12 @@ If the developer says "stop", "cancel", or "start over":
 ## Goal
 
 Ensure the project has a **production-ready Dockerfile** and `.dockerignore` that comply with AKS Deployment Safeguards and container best practices. By the end of this phase the application can be built into an OCI image suitable for deployment to Azure Kubernetes Service.
+
+---
+
+## Step 0 — Housekeeping: Update .gitignore
+
+If Phase 1 flagged missing `.gitignore` entries for agent working directories (e.g., `.claude/`, `.superpowers/`, `.opencode/`), offer to add them now before generating any new files. Wait for user approval before modifying `.gitignore`.
 
 ---
 
@@ -3219,9 +3226,9 @@ agentPoolProfiles: [
 
 ## Ingress
 
-### Recommended: Web Application Routing Addon (NGINX-based)
+### Recommended: Web Application Routing Addon
 
-The simplest path for ingress on AKS Standard is the **web application routing addon**. It deploys a managed NGINX ingress controller.
+The simplest path for ingress on AKS Standard is the **web application routing addon** (`ingressClassName: webapprouting.kubernetes.azure.com`). It deploys a managed ingress controller.
 
 Enable it in Bicep:
 
@@ -5976,7 +5983,7 @@ spec:
 # Use this template for AKS clusters with Istio Gateway API enabled
 # (appRoutingIstio.mode: Enabled). This applies to both AKS Automatic and Standard.
 #
-# For clusters using the default NGINX-based Web App Routing, use ingress.yaml instead.
+# For clusters using the default Web App Routing add-on, use ingress.yaml instead.
 #
 # REPLACE: <gateway-name> — name for the gateway (e.g., app-gateway)
 # REPLACE: <namespace>    — target namespace (e.g., production)
@@ -6111,7 +6118,7 @@ spec:
 # =============================================================================
 # Kubernetes Ingress Template — AKS Deploy Skill
 # =============================================================================
-# Use this template for AKS clusters with the Web App Routing add-on (NGINX).
+# Use this template for AKS clusters with the Web App Routing add-on
 # This is the default for both AKS Automatic and AKS Standard.
 # For clusters with Istio Gateway API enabled, use gateway.yaml + httproute.yaml instead.
 #
