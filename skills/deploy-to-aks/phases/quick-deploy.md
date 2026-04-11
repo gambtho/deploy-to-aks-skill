@@ -77,6 +77,8 @@ kubectl auth can-i create namespaces
 
 If `no`, stop with error. Offer alternatives: provision a cluster without Azure RBAC, have admin create the namespace, or deploy to an existing namespace.
 
+If any Azure CLI or kubectl command fails during detection, stop with the error and suggest common fixes: `az login`, `az account set -s <subscription-id>`, `az aks get-credentials -g <rg> -n <cluster>`.
+
 ### Knowledge Pack
 
 After framework detection, load the matching pack from `knowledge-packs/frameworks/` if available:
@@ -138,12 +140,29 @@ Before deploying, validate all generated manifests against AKS Deployment Safegu
 **AKS Automatic:** Safeguards are always enforced — all violations must be fixed.
 
 **AKS Standard:** Check `safeguardsProfile.level`:
+```bash
+az aks show -g <rg> -n <cluster> --query 'safeguardsProfile.level' -o tsv
+```
 - `Enforcement`: fix all violations
 - `Warning` or `Off`: mention issues as warnings, don't block
 
 ---
 
 ## Section 4: Deploy
+
+### Ensure kubectl context
+
+```bash
+az aks get-credentials -g <resource_group> -n <aks_cluster_name> --overwrite-existing
+```
+
+### Verify Gateway API CRDs (AKS Automatic only)
+
+```bash
+kubectl get crd gateways.gateway.networking.k8s.io httproutes.gateway.networking.k8s.io 2>/dev/null
+```
+
+If missing: `kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml`
 
 ### Build and push
 
@@ -173,14 +192,9 @@ If any step fails, show the error and stop.
 ## Section 5: Verify
 
 ```bash
-# Pod status
 kubectl get pods -n <namespace> -l app=<app-name>
-
-# External IP (AKS Automatic)
-kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}'
-
-# External IP (AKS Standard)
-kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'
+kubectl get gateway -n <namespace> -o jsonpath='{.items[0].status.addresses[0].value}'  # AKS Automatic
+kubectl get ingress -n <namespace> -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'  # AKS Standard
 ```
 
-Wait up to 3 minutes for external IP. Once available, curl the health endpoint and show the URL.
+Wait up to 3 minutes for external IP. Once available, curl the health endpoint.
