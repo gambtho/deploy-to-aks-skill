@@ -49,18 +49,18 @@ def test_mermaid_templates_referenced_in_skill_md(skill_root: Path):
 
 
 def test_knowledge_packs_referenced(skill_root: Path):
-    """Every knowledge pack is referenced in 01-discover.md or SKILL.md."""
+    """Every knowledge pack is referenced in 01-discover.md, quick-deploy.md, or SKILL.md."""
     skill_md = (skill_root / "SKILL.md").read_text()
     discover = (skill_root / "phases" / "01-discover.md").read_text()
-    quick_scan = (skill_root / "phases" / "quick-01-scan-and-plan.md").read_text()
-    combined = skill_md + discover + quick_scan
+    quick_deploy = (skill_root / "phases" / "quick-deploy.md").read_text()
+    combined = skill_md + discover + quick_deploy
     kp_dir = skill_root / "knowledge-packs" / "frameworks"
     assert kp_dir.exists(), f"Knowledge packs directory does not exist: {kp_dir}"
     files = [f for f in sorted(kp_dir.iterdir()) if f.is_file() and f.suffix == ".md"]
     assert files, f"No files found in {kp_dir}"
     for pack in files:
         assert pack.stem in combined, (
-            f"Orphan knowledge pack: {pack.name} not referenced in SKILL.md, 01-discover.md, or quick-01-scan-and-plan.md"
+            f"Orphan knowledge pack: {pack.name} not referenced in SKILL.md, 01-discover.md, or quick-deploy.md"
         )
 
 
@@ -128,22 +128,22 @@ def test_github_actions_templates_referenced_in_phase5(skill_root: Path):
 
 
 def test_quick_phase_dockerfile_templates_referenced(skill_root: Path):
-    """Every Dockerfile template is referenced in quick-02-execute.md."""
-    quick_exec = (skill_root / "phases" / "quick-02-execute.md").read_text()
+    """Every Dockerfile template is referenced in quick-deploy.md."""
+    quick_deploy = (skill_root / "phases" / "quick-deploy.md").read_text()
     docker_dir = skill_root / "templates" / "dockerfiles"
     templates = [t for t in sorted(docker_dir.iterdir()) if t.is_file()]
     assert templates, "No Dockerfile templates found"
     for template in templates:
         ref = f"templates/dockerfiles/{template.name}"
-        assert ref in quick_exec, f"Dockerfile template {template.name} not referenced in quick-02-execute.md"
+        assert ref in quick_deploy, f"Dockerfile template {template.name} not referenced in quick-deploy.md"
 
 
 def test_quick_phase_k8s_templates_referenced(skill_root: Path):
-    """Every K8s template is referenced in quick-02-execute.md."""
-    quick_exec = (skill_root / "phases" / "quick-02-execute.md").read_text()
+    """Every K8s template is referenced in quick-deploy.md."""
+    quick_deploy = (skill_root / "phases" / "quick-deploy.md").read_text()
     k8s_dir = skill_root / "templates" / "k8s"
     templates = [t for t in sorted(k8s_dir.iterdir()) if t.is_file()]
     assert templates, "No K8s templates found"
     for template in templates:
         ref = f"templates/k8s/{template.name}"
-        assert ref in quick_exec, f"K8s template {template.name} not referenced in quick-02-execute.md"
+        assert ref in quick_deploy, f"K8s template {template.name} not referenced in quick-deploy.md"
